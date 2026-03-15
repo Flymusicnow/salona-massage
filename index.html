@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Salona Massage</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface2: #22223b;
+    --accent: #c9a96e;
+    --accent2: #e8c99a;
+    --text: #f0ede8;
+    --text-muted: #8a8a9a;
+    --danger: #e05c5c;
+    --success: #5cb85c;
+    --border: rgba(201,169,110,0.15);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  .header p {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 1;
+    min-width: 70px;
+    padding: 12px 6px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .tab .tab-icon { font-size: 16px; }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* CONTENT */
+  .content {
+    padding: 20px 16px 100px;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .card-value {
+    font-size: 28px;
+    font-family: 'Playfair Display', serif;
+    color: var(--accent);
+  }
+  .card-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stats-row .card { margin-bottom: 0; }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  /* BTN */
+  .btn {
+    background: var(--accent);
+    color: #1a1a2e;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: var(--accent2); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: rgba(201,169,110,0.1); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-success { background: var(--success); color: white; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface2);
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 40px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  /* FORM */
+  .form-group { margin-bottom: 16px; }
+  label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  input, select, textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+  textarea { resize: none; height: 80px; }
+
+  /* TREATMENT ITEM */
+  .treatment-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .treatment-item.unpaid { border-left: 3px solid var(--danger); }
+  .treatment-item.paid { border-left: 3px solid var(--success); }
+  .treatment-info { flex: 1; }
+  .treatment-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .treatment-type {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .treatment-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .treatment-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+  .treatment-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--accent);
+  }
+  .badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+  .badge-unpaid { background: rgba(224,92,92,0.2); color: var(--danger); }
+  .badge-paid { background: rgba(92,184,92,0.2); color: var(--success); }
+  .badge-payment { background: rgba(201,169,110,0.15); color: var(--accent); }
+
+  /* CUSTOMER ITEM */
+  .customer-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .customer-item:hover { border-color: var(--accent); }
+  .customer-name { font-size: 15px; font-weight: 500; }
+  .customer-stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 6px;
+  }
+  .customer-stat {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .customer-stat span { color: var(--accent); font-weight: 500; }
+
+  /* EXPENSE ITEM */
+  .expense-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .expense-desc { font-size: 14px; }
+  .expense-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .expense-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--danger);
+  }
+
+  /* MONTH SELECTOR */
+  .month-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+  }
+  .month-selector button {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 6px;
+  }
+  .month-selector span {
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+
+  /* LOADING */
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 10px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* FAB */
+  .fab {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    color: #1a1a2e;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(201,169,110,0.4);
+    z-index: 100;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fab:hover { transform: scale(1.05); background: var(--accent2); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 13px;
+    z-index: 300;
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  /* PROFIT COLOR */
+  .profit-positive { color: var(--success) !important; }
+  .profit-negative { color: var(--danger) !important; }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+  }
+  .empty .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  /* NOTE */
+  .note-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  /* CUSTOMER DETAIL MODAL */
+  .customer-visit {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>✦ Salona Massage</h1>
+  <p id="sync-status">Synkroniserar...</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPage('overview')">
+    <span class="tab-icon">📊</span>Översikt
+  </button>
+  <button class="tab" onclick="showPage('treatments')">
+    <span class="tab-icon">💆</span>Behandl.
+  </button>
+  <button class="tab" onclick="showPage('customers')">
+    <span class="tab-icon">👤</span>Kunder
+  </button>
+  <button class="tab" onclick="showPage('expenses')">
+    <span class="tab-icon">💸</span>Utgifter
+  </button>
+</div>
+
+<!-- OVERVIEW PAGE -->
+<div class="content">
+  <div id="page-overview" class="page active">
+    <div class="month-selector">
+      <button onclick="changeMonth(-1)">‹</button>
+      <span id="month-display"></span>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="card">
+        <div class="card-title">Intäkter</div>
+        <div class="card-value" id="stat-revenue">0 kr</div>
+        <div class="card-sub" id="stat-revenue-count">0 behandlingar</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Utgifter</div>
+        <div class="card-value" style="color: var(--danger)" id="stat-expenses">0 kr</div>
+        <div class="card-sub" id="stat-expenses-count">0 poster</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 20px;">
+      <div class="card-title">Vinst</div>
+      <div class="card-value" id="stat-profit">0 kr</div>
+      <div class="card-sub" id="stat-profit-margin"></div>
+    </div>
+
+    <div class="section-header">
+      <span class="section-title">Obetalda behandlingar</span>
+    </div>
+    <div id="unpaid-list">
+      <div class="loading"><div class="spinner"></div><br>Laddar...</div>
+    </div>
+  </div>
+
+  <!-- TREATMENTS PAGE -->
+  <div id="page-treatments" class="page">
+    <div class="section-header">
+      <span class="section-title">Alla behandlingar</span>
+    </div>
+    <div id="treatments-list">
+      <div class="loading"><div class="spinner"></div><br>Laddar...</div>
+    </div>
+  </div>
+
+  <!-- CUSTOMERS PAGE -->
+  <div id="page-customers" class="page">
+    <div class="section-header">
+      <span class="section-title">Kunder</span>
+    </div>
+    <div id="customers-list">
+      <div class="loading"><div class="spinner"></div><br>Laddar...</div>
+    </div>
+  </div>
+
+  <!-- EXPENSES PAGE -->
+  <div id="page-expenses" class="page">
+    <div class="section-header">
+      <span class="section-title">Utgifter</span>
+    </div>
+    <div id="expenses-list">
+      <div class="loading"><div class="spinner"></div><br>Laddar...</div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openAddModal()">+</button>
+
+<!-- ADD TREATMENT MODAL -->
+<div class="modal-overlay" id="modal-treatment">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Ny behandling</h2>
+    <div class="form-group">
+      <label>Kundnamn</label>
+      <input type="text" id="t-customer" placeholder="Ex. Anna Lindgren" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Typ av behandling</label>
+      <select id="t-type">
+        <option value="">Välj typ...</option>
+        <option>Massage 60 min</option>
+        <option>Massage 90 min</option>
+        <option>Massage 30 min</option>
+        <option>Ansiktsbehandling</option>
+        <option>Fotvård</option>
+        <option>Kombinationsbehandling</option>
+        <option value="custom">Annan...</option>
+      </select>
+    </div>
+    <div class="form-group" id="t-type-custom-group" style="display:none">
+      <label>Beskriv behandling</label>
+      <input type="text" id="t-type-custom" placeholder="Ex. Sportmassage">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Pris (kr)</label>
+        <input type="number" id="t-price" placeholder="850">
+      </div>
+      <div class="form-group">
+        <label>Datum</label>
+        <input type="date" id="t-date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Betalmetod</label>
+      <select id="t-payment">
+        <option value="">Ej betald ännu</option>
+        <option value="Swish">Swish</option>
+        <option value="Kontant">Kontant</option>
+        <option value="Kort">Kort</option>
+        <option value="Faktura">Faktura</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Anteckning (valfri)</label>
+      <textarea id="t-note" placeholder="Ex. Ömt i nacken, uppföljning om 3v..."></textarea>
+    </div>
+    <button class="btn" style="width:100%" onclick="saveTreatment()">Spara behandling</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="closeModals()">Avbryt</button>
+  </div>
+</div>
+
+<!-- ADD EXPENSE MODAL -->
+<div class="modal-overlay" id="modal-expense">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Ny utgift</h2>
+    <div class="form-group">
+      <label>Beskrivning</label>
+      <input type="text" id="e-desc" placeholder="Ex. Massageoljor">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Belopp (kr)</label>
+        <input type="number" id="e-amount" placeholder="450">
+      </div>
+      <div class="form-group">
+        <label>Datum</label>
+        <input type="date" id="e-date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Betalt till</label>
+      <input type="text" id="e-to" placeholder="Ex. ICA, Amazon...">
+    </div>
+    <button class="btn" style="width:100%" onclick="saveExpense()">Spara utgift</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="closeModals()">Avbryt</button>
+  </div>
+</div>
+
+<!-- CUSTOMER DETAIL MODAL -->
+<div class="modal-overlay" id="modal-customer">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="customer-modal-name"></h2>
+    <div id="customer-modal-body"></div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:16px" onclick="closeModals()">Stäng</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── SUPABASE ───────────────────────────────────────────────────
+const SUPABASE_URL = 'https://oeqmdiqrgfglywepatkq.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lcW1kaXFyZ2ZnbHl3ZXBhdGtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODM1MjQsImV4cCI6MjA4OTE1OTUyNH0.WHY-mJ7NGXkI9To32mLQ-3fTbg7dXRTKG6KIlZcw4V8';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ─── STATE ──────────────────────────────────────────────────────
+let currentPage = 'overview';
+let currentMonth = new Date();
+let allTreatments = [];
+let allExpenses = [];
+
+// ─── INIT ───────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  setDefaultDates();
+  updateMonthDisplay();
+  await loadAll();
+  setupRealtime();
+});
+
+async function loadAll() {
+  try {
+    const [t, e] = await Promise.all([
+      db.from('treatments').select('*').order('date', { ascending: false }),
+      db.from('expenses').select('*').order('date', { ascending: false })
+    ]);
+    allTreatments = t.data || [];
+    allExpenses = e.data || [];
+    document.getElementById('sync-status').textContent = 'Synkroniserad ✓';
+    renderAll();
+  } catch (err) {
+    document.getElementById('sync-status').textContent = 'Offline — kontrollera anslutning';
+    console.error(err);
+  }
+}
+
+function setupRealtime() {
+  db.channel('realtime-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'treatments' }, () => loadAll())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => loadAll())
+    .subscribe();
+}
+
+function renderAll() {
+  renderOverview();
+  renderTreatments();
+  renderCustomers();
+  renderExpenses();
+}
+
+// ─── MONTH ──────────────────────────────────────────────────────
+function changeMonth(dir) {
+  currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + dir, 1);
+  updateMonthDisplay();
+  renderOverview();
+}
+function updateMonthDisplay() {
+  const d = currentMonth;
+  const months = ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
+  document.getElementById('month-display').textContent = `${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+function inCurrentMonth(dateStr) {
+  const d = new Date(dateStr);
+  return d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear();
+}
+
+// ─── OVERVIEW ───────────────────────────────────────────────────
+function renderOverview() {
+  const monthT = allTreatments.filter(t => inCurrentMonth(t.date) && t.status === 'paid');
+  const monthE = allExpenses.filter(e => inCurrentMonth(e.date));
+  const revenue = monthT.reduce((s, t) => s + Number(t.price), 0);
+  const expenses = monthE.reduce((s, e) => s + Number(e.amount), 0);
+  const profit = revenue - expenses;
+
+  document.getElementById('stat-revenue').textContent = fmtKr(revenue);
+  document.getElementById('stat-revenue-count').textContent = `${monthT.length} behandlingar`;
+  document.getElementById('stat-expenses').textContent = fmtKr(expenses);
+  document.getElementById('stat-expenses-count').textContent = `${monthE.length} poster`;
+
+  const profitEl = document.getElementById('stat-profit');
+  profitEl.textContent = fmtKr(profit);
+  profitEl.className = 'card-value ' + (profit >= 0 ? 'profit-positive' : 'profit-negative');
+  
+  if (revenue > 0) {
+    const margin = Math.round((profit / revenue) * 100);
+    document.getElementById('stat-profit-margin').textContent = `${margin}% marginal`;
+  } else {
+    document.getElementById('stat-profit-margin').textContent = 'Inga intäkter ännu';
+  }
+
+  const unpaid = allTreatments.filter(t => t.status === 'unpaid');
+  const unpaidEl = document.getElementById('unpaid-list');
+  if (unpaid.length === 0) {
+    unpaidEl.innerHTML = `<div class="empty"><div class="empty-icon">✅</div><p>Alla är betalda!</p></div>`;
+    return;
+  }
+  unpaidEl.innerHTML = unpaid.map(t => treatmentHTML(t, true)).join('');
+}
+
+// ─── TREATMENTS ─────────────────────────────────────────────────
+function renderTreatments() {
+  const el = document.getElementById('treatments-list');
+  if (allTreatments.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">💆</div><p>Inga behandlingar ännu</p></div>`;
+    return;
+  }
+  el.innerHTML = allTreatments.map(t => treatmentHTML(t, false)).join('');
+}
+
+function treatmentHTML(t, showMarkPaid) {
+  const paid = t.status === 'paid';
+  const paymentBadge = t.payment_method ? `<span class="badge badge-payment">${t.payment_method}</span>` : '';
+  const markBtn = (!paid) ? `<button class="btn btn-sm btn-success" onclick="markPaid('${t.id}', event)">Markera betald</button>` : '';
+  const deleteBtn = `<button class="btn btn-sm btn-ghost" onclick="deleteTreatment('${t.id}', event)" style="color:var(--danger);border-color:rgba(224,92,92,0.3)">✕</button>`;
+  const noteHTML = t.note ? `<div class="note-text">${t.note}</div>` : '';
+  
+  return `
+  <div class="treatment-item ${paid ? 'paid' : 'unpaid'}">
+    <div class="treatment-info">
+      <div class="treatment-name">${t.customer_name}</div>
+      <div class="treatment-type">${t.treatment_type}</div>
+      ${noteHTML}
+      <div class="treatment-date">${fmtDate(t.date)}</div>
+      <div class="action-row">
+        ${markBtn}
+        ${deleteBtn}
+      </div>
+    </div>
+    <div class="treatment-meta">
+      <div class="treatment-price">${fmtKr(t.price)}</div>
+      <span class="badge ${paid ? 'badge-paid' : 'badge-unpaid'}">${paid ? 'Betald' : 'Obetald'}</span>
+      ${paymentBadge}
+    </div>
+  </div>`;
+}
+
+// ─── CUSTOMERS ──────────────────────────────────────────────────
+function renderCustomers() {
+  const el = document.getElementById('customers-list');
+  const customerMap = {};
+  allTreatments.forEach(t => {
+    if (!customerMap[t.customer_name]) customerMap[t.customer_name] = [];
+    customerMap[t.customer_name].push(t);
+  });
+  const customers = Object.entries(customerMap).sort((a,b) => b[1].length - a[1].length);
+  if (customers.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">👤</div><p>Inga kunder ännu</p></div>`;
+    return;
+  }
+  el.innerHTML = customers.map(([name, visits]) => {
+    const total = visits.reduce((s,v) => s + Number(v.price), 0);
+    const last = visits[0]?.date;
+    return `<div class="customer-item" onclick="showCustomer('${name}')">
+      <div class="customer-name">${name}</div>
+      <div class="customer-stats">
+        <div class="customer-stat"><span>${visits.length}</span> besök</div>
+        <div class="customer-stat"><span>${fmtKr(total)}</span> totalt</div>
+        <div class="customer-stat">senast <span>${fmtDate(last)}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showCustomer(name) {
+  const visits = allTreatments.filter(t => t.customer_name === name);
+  const total = visits.reduce((s,v) => s + Number(v.price), 0);
+  document.getElementById('customer-modal-name').textContent = name;
+  document.getElementById('customer-modal-body').innerHTML = `
+    <div style="margin-bottom:16px">
+      <span style="font-size:12px;color:var(--text-muted)">${visits.length} besök totalt · ${fmtKr(total)} totalt</span>
+    </div>
+    ${visits.map(v => `
+      <div class="customer-visit">
+        <div>
+          <div style="font-size:14px">${v.treatment_type}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${fmtDate(v.date)}</div>
+          ${v.note ? `<div class="note-text">${v.note}</div>` : ''}
+        </div>
+        <div style="text-align:right">
+          <div style="color:var(--accent);font-size:16px">${fmtKr(v.price)}</div>
+          <span class="badge ${v.status==='paid'?'badge-paid':'badge-unpaid'}">${v.status==='paid'?'Betald':'Obetald'}</span>
+        </div>
+      </div>
+    `).join('')}
+  `;
+  document.getElementById('modal-customer').classList.add('open');
+}
+
+// ─── EXPENSES ───────────────────────────────────────────────────
+function renderExpenses() {
+  const el = document.getElementById('expenses-list');
+  if (allExpenses.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">💸</div><p>Inga utgifter ännu</p></div>`;
+    return;
+  }
+  el.innerHTML = allExpenses.map(e => `
+    <div class="expense-item">
+      <div>
+        <div class="expense-desc">${e.description}</div>
+        <div class="expense-meta">${fmtDate(e.date)}${e.paid_to ? ' · ' + e.paid_to : ''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div class="expense-amount">-${fmtKr(e.amount)}</div>
+        <button class="btn btn-sm btn-ghost" onclick="deleteExpense('${e.id}', event)" style="color:var(--danger);border-color:rgba(224,92,92,0.3)">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── SAVE ────────────────────────────────────────────────────────
+async function saveTreatment() {
+  const typeEl = document.getElementById('t-type');
+  const type = typeEl.value === 'custom' ? document.getElementById('t-type-custom').value : typeEl.value;
+  const customer = document.getElementById('t-customer').value.trim();
+  const price = document.getElementById('t-price').value;
+  const date = document.getElementById('t-date').value;
+  const payment = document.getElementById('t-payment').value;
+  const note = document.getElementById('t-note').value.trim();
+
+  if (!customer || !type || !price || !date) { showToast('Fyll i alla obligatoriska fält'); return; }
+
+  const { error } = await db.from('treatments').insert({
+    customer_name: customer,
+    treatment_type: type,
+    price: Number(price),
+    date,
+    payment_method: payment || null,
+    status: payment ? 'paid' : 'unpaid',
+    note: note || null
+  });
+
+  if (error) { showToast('Fel: ' + error.message); return; }
+  showToast('Behandling sparad ✓');
+  closeModals();
+  resetTreatmentForm();
+  await loadAll();
+}
+
+async function saveExpense() {
+  const desc = document.getElementById('e-desc').value.trim();
+  const amount = document.getElementById('e-amount').value;
+  const date = document.getElementById('e-date').value;
+  const to = document.getElementById('e-to').value.trim();
+
+  if (!desc || !amount || !date) { showToast('Fyll i alla obligatoriska fält'); return; }
+
+  const { error } = await db.from('expenses').insert({
+    description: desc,
+    amount: Number(amount),
+    date,
+    paid_to: to || null
+  });
+
+  if (error) { showToast('Fel: ' + error.message); return; }
+  showToast('Utgift sparad ✓');
+  closeModals();
+  resetExpenseForm();
+  await loadAll();
+}
+
+async function markPaid(id, event) {
+  event.stopPropagation();
+  const payment = prompt('Betalmetod:', 'Swish');
+  if (!payment) return;
+  const { error } = await db.from('treatments').update({ status: 'paid', payment_method: payment }).eq('id', id);
+  if (error) { showToast('Fel: ' + error.message); return; }
+  showToast('Markerad som betald ✓');
+  await loadAll();
+}
+
+async function deleteTreatment(id, event) {
+  event.stopPropagation();
+  if (!confirm('Radera behandling?')) return;
+  await db.from('treatments').delete().eq('id', id);
+  await loadAll();
+}
+
+async function deleteExpense(id, event) {
+  event.stopPropagation();
+  if (!confirm('Radera utgift?')) return;
+  await db.from('expenses').delete().eq('id', id);
+  await loadAll();
+}
+
+// ─── UI ──────────────────────────────────────────────────────────
+function showPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.tab')[['overview','treatments','customers','expenses'].indexOf(page)].classList.add('active');
+}
+
+function openAddModal() {
+  if (currentPage === 'expenses') {
+    document.getElementById('modal-expense').classList.add('open');
+  } else {
+    document.getElementById('modal-treatment').classList.add('open');
+  }
+}
+
+function closeModals() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModals(); });
+});
+
+document.getElementById('t-type').addEventListener('change', function() {
+  document.getElementById('t-type-custom-group').style.display = this.value === 'custom' ? 'block' : 'none';
+});
+
+function setDefaultDates() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('t-date').value = today;
+  document.getElementById('e-date').value = today;
+}
+
+function resetTreatmentForm() {
+  document.getElementById('t-customer').value = '';
+  document.getElementById('t-type').value = '';
+  document.getElementById('t-price').value = '';
+  document.getElementById('t-payment').value = '';
+  document.getElementById('t-note').value = '';
+  setDefaultDates();
+}
+
+function resetExpenseForm() {
+  document.getElementById('e-desc').value = '';
+  document.getElementById('e-amount').value = '';
+  document.getElementById('e-to').value = '';
+  setDefaultDates();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function fmtKr(n) {
+  return Math.round(n).toLocaleString('sv-SE') + ' kr';
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
+}
+</script>
+</body>
+</html>
