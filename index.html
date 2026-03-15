@@ -7,753 +7,871 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Salona Massage</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --bg: #0f0f1a;
-    --surface: #1a1a2e;
-    --surface2: #22223b;
-    --accent: #c9a96e;
-    --accent2: #e8c99a;
-    --text: #f0ede8;
-    --text-muted: #8a8a9a;
-    --danger: #e05c5c;
-    --success: #5cb85c;
-    --border: rgba(201,169,110,0.15);
-    --radius: 16px;
-    --radius-sm: 10px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    max-width: 480px;
-    margin: 0 auto;
-    overflow-x: hidden;
-  }
+:root {
+  --bg:#0f0f1a; --surface:#1a1a2e; --surface2:#22223b; --surface3:#2a2a42;
+  --accent:#c9a96e; --accent2:#e8c99a; --adim:rgba(201,169,110,0.12);
+  --text:#f0ede8; --muted:#8a8a9a; --muted2:#5a5a6a;
+  --danger:#e05c5c; --success:#5cb85c; --warn:#e0a84a;
+  --border:rgba(201,169,110,0.13); --border2:rgba(201,169,110,0.28);
+  --r:16px; --rs:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden}
 
-  /* ── PIN SCREEN ── */
-  #pin-screen {
-    position: fixed; inset: 0; background: var(--bg);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    z-index: 999; gap: 32px;
-  }
-  #pin-screen h1 { font-family: 'Playfair Display', serif; color: var(--accent); font-size: 28px; }
-  #pin-screen p { color: var(--text-muted); font-size: 14px; margin-top: -24px; }
-  .pin-dots { display: flex; gap: 16px; }
-  .pin-dot {
-    width: 14px; height: 14px; border-radius: 50%;
-    border: 2px solid var(--accent); background: transparent;
-    transition: background 0.15s;
-  }
-  .pin-dot.filled { background: var(--accent); }
-  .pin-pad { display: grid; grid-template-columns: repeat(3, 72px); gap: 14px; }
-  .pin-btn {
-    width: 72px; height: 72px; border-radius: 50%;
-    background: var(--surface); border: 1px solid var(--border);
-    color: var(--text); font-size: 22px; font-family: 'DM Sans', sans-serif;
-    cursor: pointer; transition: all 0.15s; display: flex;
-    align-items: center; justify-content: center;
-  }
-  .pin-btn:active { background: var(--surface2); transform: scale(0.95); }
-  .pin-btn.del { font-size: 18px; color: var(--text-muted); }
-  .pin-error { color: var(--danger); font-size: 13px; min-height: 20px; }
+/* ── ONBOARDING ── */
+#onboarding{position:fixed;inset:0;background:var(--bg);z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:0}
+.ob-step{display:none;flex-direction:column;align-items:center;text-align:center;gap:18px;animation:fadeIn .4s ease}
+.ob-step.active{display:flex}
+.ob-icon{font-size:60px}
+.ob-title{font-family:'Playfair Display',serif;font-size:25px;color:var(--accent)}
+.ob-text{color:var(--muted);font-size:14px;line-height:1.65;max-width:300px}
+.ob-dots{display:flex;gap:8px;margin-top:6px}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:background .3s}
+.ob-dot.active{background:var(--accent)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-  /* ── HEADER ── */
-  .header {
-    background: var(--surface); padding: 20px 20px 16px;
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100;
-    display: flex; justify-content: space-between; align-items: flex-start;
-  }
-  .header h1 { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); letter-spacing: 0.05em; }
-  .header p { font-size: 11px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.08em; text-transform: uppercase; }
-  .lock-btn { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; padding: 4px; }
+/* ── PIN ── */
+#pin-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:26px}
+.pin-logo{font-family:'Playfair Display',serif;color:var(--accent);font-size:28px}
+.pin-sub{color:var(--muted);font-size:13px;margin-top:-18px}
+.pin-dots{display:flex;gap:16px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);background:transparent;transition:background .15s}
+.pin-dot.filled{background:var(--accent)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,70px);gap:12px}
+.pin-btn{width:70px;height:70px;border-radius:50%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:22px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.pin-btn:active{background:var(--surface2);transform:scale(.95)}
+.pin-err{color:var(--danger);font-size:13px;min-height:18px;text-align:center}
 
-  /* ── TABS ── */
-  .tabs {
-    display: flex; background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    flex: 1; min-width: 70px; padding: 12px 6px;
-    background: none; border: none; color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif; font-size: 11px;
-    letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
-    transition: all 0.2s; border-bottom: 2px solid transparent;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-  }
-  .tab .tab-icon { font-size: 16px; }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+/* ── LAJO BADGE ── */
+.lajo-bar{background:linear-gradient(135deg,#1a1a2e,#22223b);border-bottom:2px solid var(--accent);padding:8px 18px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--accent);letter-spacing:.06em}
+.lajo-bar span{background:var(--accent);color:#1a1a2e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.08em}
 
-  /* ── CONTENT ── */
-  .content { padding: 20px 16px 100px; }
-  .page { display: none; }
-  .page.active { display: block; }
+/* ── HEADER ── */
+.header{background:var(--surface);padding:13px 17px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-family:'Playfair Display',serif;font-size:19px;color:var(--accent)}
+.header p{font-size:10px;color:var(--muted);margin-top:1px;letter-spacing:.07em;text-transform:uppercase}
+.hbtns{display:flex;gap:5px}
+.icon-btn{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:6px;border-radius:8px;transition:color .2s}
+.icon-btn:hover{color:var(--accent)}
 
-  /* ── CARDS ── */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
-  .card-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 8px; }
-  .card-value { font-size: 28px; font-family: 'Playfair Display', serif; color: var(--accent); }
-  .card-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-  .stats-row .card { margin-bottom: 0; }
+/* ── TABS ── */
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:56px;padding:10px 3px;background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .2s;border-bottom:2px solid transparent;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tab .ti{font-size:14px}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
-  /* ── SECTION ── */
-  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-  .section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+/* ── CONTENT ── */
+.content{padding:15px 13px 100px}
+.page{display:none}
+.page.active{display:block}
 
-  /* ── BUTTONS ── */
-  .btn { background: var(--accent); color: #1a1a2e; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-  .btn:hover { background: var(--accent2); }
-  .btn-sm { padding: 6px 12px; font-size: 12px; }
-  .btn-ghost { background: transparent; color: var(--accent); border: 1px solid var(--border); }
-  .btn-ghost:hover { background: rgba(201,169,110,0.1); }
-  .btn-danger { background: var(--danger); color: white; }
-  .btn-success { background: var(--success); color: white; }
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.card-label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px}
+.card-val{font-size:25px;font-family:'Playfair Display',serif;color:var(--accent)}
+.card-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
+.stats-row .card{margin-bottom:0}
 
-  /* ── MODAL ── */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: none; align-items: flex-end; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--surface2); border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease; }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
-  .modal h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--accent); margin-bottom: 20px; }
+/* ── ALERTS ── */
+.alert{border-radius:var(--rs);padding:11px 12px;margin-bottom:9px;display:flex;align-items:flex-start;gap:9px;font-size:13px;line-height:1.4}
+.a-bday{background:rgba(224,168,74,.12);border:1px solid rgba(224,168,74,.3);color:var(--warn)}
+.a-inactive{background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.25);color:var(--danger)}
 
-  /* ── FORM ── */
-  .form-group { margin-bottom: 16px; }
-  label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 6px; }
-  input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
-  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-  select option { background: var(--surface2); }
-  textarea { resize: none; height: 80px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* ── SECTION ── */
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;margin-top:2px}
+.st{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
 
-  /* ── TREATMENT ITEM ── */
-  .treatment-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-  .treatment-item.unpaid { border-left: 3px solid var(--danger); }
-  .treatment-item.paid { border-left: 3px solid var(--success); }
-  .treatment-info { flex: 1; }
-  .treatment-name { font-size: 15px; font-weight: 500; }
-  .treatment-type { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-  .treatment-date { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-  .treatment-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-  .treatment-price { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--accent); }
-  .badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.05em; font-weight: 500; }
-  .badge-unpaid { background: rgba(224,92,92,0.2); color: var(--danger); }
-  .badge-paid { background: rgba(92,184,92,0.2); color: var(--success); }
-  .badge-payment { background: rgba(201,169,110,0.15); color: var(--accent); }
-  .action-row { display: flex; gap: 8px; margin-top: 8px; }
-  .note-text { font-size: 12px; color: var(--text-muted); font-style: italic; margin-top: 4px; }
+/* ── MONTH ── */
+.mbar{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:8px 10px;margin-bottom:13px}
+.mbar button{background:none;border:none;color:var(--accent);font-size:20px;cursor:pointer;padding:0 8px;line-height:1}
+.mbar span{flex:1;text-align:center;font-size:14px;font-weight:500}
 
-  /* ── CUSTOMER ── */
-  .customer-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.2s; }
-  .customer-item:hover { border-color: var(--accent); }
-  .customer-name { font-size: 15px; font-weight: 500; }
-  .customer-stats { display: flex; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
-  .customer-stat { font-size: 12px; color: var(--text-muted); }
-  .customer-stat span { color: var(--accent); font-weight: 500; }
-  .customer-visit { background: var(--bg); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; }
+/* ── BUTTONS ── */
+.btn{background:var(--accent);color:#1a1a2e;border:none;border-radius:var(--rs);padding:10px 17px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--accent2)}
+.btn:active{transform:scale(.97)}
+.btn-sm{padding:5px 11px;font-size:12px;font-weight:500}
+.btn-ghost{background:transparent;color:var(--accent);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--adim)}
+.btn-success{background:var(--success);color:#fff}
+.btn-block{width:100%;justify-content:center}
 
-  /* ── EXPENSE ── */
-  .expense-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-  .expense-desc { font-size: 14px; }
-  .expense-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-  .expense-amount { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--danger); }
+/* ── TREATMENT ── */
+.t-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:11px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:flex-start;gap:9px}
+.t-item.unpaid{border-left:3px solid var(--danger)}
+.t-item.paid{border-left:3px solid var(--success)}
+.t-info{flex:1;min-width:0}
+.t-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-type{font-size:12px;color:var(--muted);margin-top:1px}
+.t-date{font-size:11px;color:var(--muted2);margin-top:3px}
+.t-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:2px}
+.t-meta{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.t-price{font-family:'Playfair Display',serif;font-size:16px;color:var(--accent)}
+.t-actions{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+.badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;white-space:nowrap}
+.b-unpaid{background:rgba(224,92,92,.18);color:var(--danger)}
+.b-paid{background:rgba(92,184,92,.18);color:var(--success)}
+.b-method{background:var(--adim);color:var(--accent)}
 
-  /* ── MONTH ── */
-  .month-selector { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; }
-  .month-selector button { background: none; border: none; color: var(--accent); font-size: 18px; cursor: pointer; padding: 0 6px; }
-  .month-selector span { flex: 1; text-align: center; font-size: 14px; font-weight: 500; }
+/* ── CUSTOMER ── */
+.c-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:11px;margin-bottom:7px;cursor:pointer;transition:border-color .2s;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.c-item:hover{border-color:var(--border2)}
+.c-left{flex:1;min-width:0}
+.c-name{font-size:14px;font-weight:500}
+.c-meta{font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:9px;flex-wrap:wrap}
+.c-meta span{color:var(--accent);font-weight:500}
+.c-avatar{width:34px;height:34px;border-radius:50%;background:var(--adim);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);flex-shrink:0}
+.inact-badge{font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(224,92,92,.15);color:var(--danger);font-weight:500}
 
-  /* ── MISC ── */
-  .loading { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
-  .spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 10px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); border: none; color: #1a1a2e; font-size: 24px; cursor: pointer; box-shadow: 0 4px 20px rgba(201,169,110,0.4); z-index: 100; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-  .fab:hover { transform: scale(1.05); background: var(--accent2); }
-  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 24px; font-size: 13px; z-index: 300; opacity: 0; transition: opacity 0.3s; white-space: nowrap; }
-  .toast.show { opacity: 1; }
-  .profit-positive { color: var(--success) !important; }
-  .profit-negative { color: var(--danger) !important; }
-  .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-  .empty .empty-icon { font-size: 40px; margin-bottom: 12px; }
-  .empty p { font-size: 14px; }
-  .export-btn { display: flex; align-items: center; gap: 6px; }
+/* ── EXPENSE ── */
+.e-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:11px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:9px}
+.e-desc{font-size:14px}
+.e-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.e-amt{font-family:'Playfair Display',serif;font-size:16px;color:var(--danger);white-space:nowrap}
+
+/* ── STATS ── */
+.progress-bar{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .6s ease}
+
+/* ── KASSA ── */
+.kassa{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:13px;margin-bottom:12px}
+.kassa-title{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px}
+.kassa-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.kassa-item{background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center}
+.kassa-method{font-size:11px;color:var(--muted);margin-bottom:3px}
+.kassa-amt{font-family:'Playfair Display',serif;font-size:18px;color:var(--accent)}
+
+/* ── SETTINGS ── */
+.set-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:border-color .2s}
+.set-item:hover{border-color:var(--border2)}
+.set-label{font-size:14px}
+.set-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface2);border-radius:22px 22px 0 0;padding:19px 16px 36px;width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhandle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 15px}
+.modal h2{font-family:'Playfair Display',serif;font-size:19px;color:var(--accent);margin-bottom:15px}
+
+/* ── FORM ── */
+.fg{margin-bottom:12px}
+label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:var(--surface2)}
+textarea{resize:none;height:70px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+
+/* ── BULK ── */
+.bulk-area{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;width:100%;height:140px;resize:none;outline:none;line-height:1.75}
+.bulk-area:focus{border-color:var(--accent)}
+.bulk-row{display:flex;justify-content:space-between;padding:5px 8px;background:var(--bg);border-radius:6px;margin-bottom:3px;font-size:12px}
+.format-hint{background:var(--surface3);border-radius:var(--rs);padding:11px 13px;margin-bottom:13px;font-size:12px;color:var(--muted);line-height:1.7}
+.format-hint b{color:var(--accent);font-weight:500}
+
+/* ── MISC ── */
+.loading{text-align:center;padding:34px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:9px}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:34px 18px;color:var(--muted)}
+.empty .ei{font-size:34px;margin-bottom:9px}
+.empty p{font-size:13px}
+.fab{position:fixed;bottom:21px;right:16px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#1a1a2e;font-size:25px;cursor:pointer;box-shadow:0 4px 16px rgba(201,169,110,.4);z-index:100;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.fab:hover{transform:scale(1.06);background:var(--accent2)}
+.toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%);background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:9px 20px;border-radius:24px;font-size:13px;z-index:400;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.ppos{color:var(--success)!important}
+.pneg{color:var(--danger)!important}
+.ro-overlay{position:fixed;inset:0;z-index:50;pointer-events:none}
 </style>
 </head>
 <body>
 
-<!-- PIN SCREEN -->
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-step active" id="ob0"><div class="ob-icon">✦</div><div class="ob-title">Välkommen till Salona</div><div class="ob-text">Din personliga app för kunder, behandlingar och bokföring — alltid synkad, alltid tillgänglig.</div></div>
+  <div class="ob-step" id="ob1"><div class="ob-icon">👤</div><div class="ob-title">Lägg in dina kunder</div><div class="ob-text">En i taget eller hela listan på en gång. Namn, telefon, email, födelsedag — allt samlat.</div></div>
+  <div class="ob-step" id="ob2"><div class="ob-icon">💆</div><div class="ob-title">Registrera behandlingar</div><div class="ob-text">10 sekunder per behandling. Appen håller koll på vad som är betalt och vad som väntar.</div></div>
+  <div class="ob-step" id="ob3"><div class="ob-icon">🔐</div><div class="ob-title">Två inlogg</div><div class="ob-text"><b style="color:var(--accent)">Salona</b> — full åtkomst<br><br><b style="color:var(--accent)">Lajo</b> — ser allt men kan inte ändra<br><br>Samma data, i realtid.</div></div>
+  <div class="ob-dots"><div class="ob-dot active" id="od0"></div><div class="ob-dot" id="od1"></div><div class="ob-dot" id="od2"></div><div class="ob-dot" id="od3"></div></div>
+  <button class="btn btn-block" id="ob-btn" onclick="obNext()" style="max-width:250px;margin-top:10px">Nästa →</button>
+  <button class="btn btn-ghost" onclick="finishOb()" style="max-width:250px;font-size:12px;padding:8px;margin-top:4px">Hoppa över</button>
+</div>
+
+<!-- PIN -->
 <div id="pin-screen">
-  <h1>✦ Salona</h1>
-  <p>Ange PIN-kod</p>
+  <div class="pin-logo">✦ Salona Massage</div>
+  <div class="pin-sub" id="pin-sub">Ange PIN-kod</div>
   <div class="pin-dots">
-    <div class="pin-dot" id="d0"></div>
-    <div class="pin-dot" id="d1"></div>
-    <div class="pin-dot" id="d2"></div>
-    <div class="pin-dot" id="d3"></div>
+    <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
   </div>
   <div class="pin-pad">
-    <button class="pin-btn" onclick="pinPress('1')">1</button>
-    <button class="pin-btn" onclick="pinPress('2')">2</button>
-    <button class="pin-btn" onclick="pinPress('3')">3</button>
-    <button class="pin-btn" onclick="pinPress('4')">4</button>
-    <button class="pin-btn" onclick="pinPress('5')">5</button>
-    <button class="pin-btn" onclick="pinPress('6')">6</button>
-    <button class="pin-btn" onclick="pinPress('7')">7</button>
-    <button class="pin-btn" onclick="pinPress('8')">8</button>
-    <button class="pin-btn" onclick="pinPress('9')">9</button>
-    <button class="pin-btn" onclick="pinPress('')" style="visibility:hidden"></button>
-    <button class="pin-btn" onclick="pinPress('0')">0</button>
-    <button class="pin-btn del" onclick="pinDel()">⌫</button>
+    <button class="pin-btn" onclick="pp('1')">1</button><button class="pin-btn" onclick="pp('2')">2</button><button class="pin-btn" onclick="pp('3')">3</button>
+    <button class="pin-btn" onclick="pp('4')">4</button><button class="pin-btn" onclick="pp('5')">5</button><button class="pin-btn" onclick="pp('6')">6</button>
+    <button class="pin-btn" onclick="pp('7')">7</button><button class="pin-btn" onclick="pp('8')">8</button><button class="pin-btn" onclick="pp('9')">9</button>
+    <button class="pin-btn" style="visibility:hidden"></button>
+    <button class="pin-btn" onclick="pp('0')">0</button>
+    <button class="pin-btn" onclick="pdel()" style="font-size:18px;color:var(--muted)">⌫</button>
   </div>
-  <div class="pin-error" id="pin-error"></div>
+  <div class="pin-err" id="pin-err"></div>
 </div>
 
 <!-- APP -->
 <div id="app" style="display:none">
-
-<div class="header">
-  <div>
-    <h1>✦ Salona Massage</h1>
-    <p id="sync-status">Synkroniserar...</p>
+  <div id="lajo-bar" class="lajo-bar" style="display:none">
+    👁 <span>LAJO-LÄGE</span> — du ser allt men kan inte ändra
   </div>
-  <button class="lock-btn" onclick="lockApp()" title="Lås appen">🔒</button>
+  <div class="header">
+    <div><h1>✦ Salona Massage</h1><p id="sync-status">Ansluter...</p></div>
+    <div class="hbtns">
+      <button class="icon-btn" onclick="showPage('stats')">📈</button>
+      <button class="icon-btn" id="settings-btn" onclick="showPage('settings')">⚙️</button>
+      <button class="icon-btn" onclick="lockApp()">🔒</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showPage('overview')"><span class="ti">📊</span>Översikt</button>
+    <button class="tab" onclick="showPage('treatments')"><span class="ti">💆</span>Behandl.</button>
+    <button class="tab" onclick="showPage('customers')"><span class="ti">👤</span>Kunder</button>
+    <button class="tab" onclick="showPage('expenses')"><span class="ti">💸</span>Utgifter</button>
+  </div>
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div id="page-overview" class="page active">
+      <div class="mbar"><button onclick="chMonth(-1)">‹</button><span id="month-display"></span><button onclick="chMonth(1)">›</button></div>
+      <div id="alerts-area"></div>
+      <div class="stats-row">
+        <div class="card"><div class="card-label">Intäkter</div><div class="card-val" id="s-rev">0 kr</div><div class="card-sub" id="s-rev-c"></div></div>
+        <div class="card"><div class="card-label">Utgifter</div><div class="card-val" style="color:var(--danger)" id="s-exp">0 kr</div><div class="card-sub" id="s-exp-c"></div></div>
+      </div>
+      <div class="card" style="margin-bottom:13px"><div class="card-label">Vinst</div><div class="card-val" id="s-profit">0 kr</div><div class="card-sub" id="s-margin"></div></div>
+      <div class="kassa"><div class="kassa-title">💰 Kassakoll — denna månad</div><div class="kassa-grid" id="kassa-grid"></div></div>
+      <div class="sh"><span class="st">Denna månads behandlingar</span><span id="month-count" style="font-size:12px;color:var(--muted)"></span></div>
+      <div id="month-list"></div>
+      <div class="sh" style="margin-top:13px"><span class="st">Obetalda behandlingar</span></div>
+      <div id="unpaid-list"></div>
+    </div>
+
+    <!-- TREATMENTS -->
+    <div id="page-treatments" class="page">
+      <div class="sh"><span class="st">Alla behandlingar</span><button class="btn btn-sm btn-ghost" onclick="exportCSV('treatments')">⬇ CSV</button></div>
+      <div id="treatments-list"></div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div id="page-customers" class="page">
+      <div class="sh">
+        <span class="st">Kundregister</span>
+        <div id="cust-btns" style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-ghost" onclick="openModal('modal-bulk')">+ Bulk</button>
+          <button class="btn btn-sm btn-ghost" onclick="openModal('modal-cust-add')">+ Ny</button>
+        </div>
+      </div>
+      <input type="text" id="cust-search" placeholder="🔍  Sök kund..." oninput="renderCustomers()" style="margin-bottom:11px">
+      <div id="customers-list"></div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div id="page-expenses" class="page">
+      <div class="sh"><span class="st">Utgifter</span><button class="btn btn-sm btn-ghost" onclick="exportCSV('expenses')">⬇ CSV</button></div>
+      <div id="expenses-list"></div>
+    </div>
+
+    <!-- STATS -->
+    <div id="page-stats" class="page">
+      <div class="sh"><span class="st">Statistik</span></div>
+      <div id="stats-content"></div>
+    </div>
+
+    <!-- SETTINGS (Salona only) -->
+    <div id="page-settings" class="page">
+      <div class="sh"><span class="st">Inställningar</span></div>
+      <div class="set-item" onclick="openModal('modal-pin-s')"><div><div class="set-label">🔐 Salonas PIN-kod</div><div class="set-sub">Ändra Salonas PIN</div></div><div style="color:var(--muted)">›</div></div>
+      <div class="set-item" onclick="openModal('modal-pin-l')"><div><div class="set-label">👁 Lajos PIN-kod</div><div class="set-sub">Ändra Lajos PIN (read-only)</div></div><div style="color:var(--muted)">›</div></div>
+      <div class="set-item" onclick="openModal('modal-bulk')"><div><div class="set-label">👥 Importera kunder</div><div class="set-sub">Klistra in en lista</div></div><div style="color:var(--muted)">›</div></div>
+      <div class="set-item" onclick="exportCSV('treatments')"><div><div class="set-label">📥 Exportera behandlingar</div><div class="set-sub">CSV-fil</div></div><div style="color:var(--muted)">›</div></div>
+      <div class="set-item" onclick="exportCSV('expenses')"><div><div class="set-label">📥 Exportera utgifter</div><div class="set-sub">CSV-fil</div></div><div style="color:var(--muted)">›</div></div>
+      <div style="margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs)">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Version</div>
+        <div style="font-size:13px;color:var(--muted)">Salona Massage v5 · Synkad i molnet ✓</div>
+      </div>
+    </div>
+
+  </div>
+  <button class="fab" id="fab" onclick="openAddModal()">+</button>
 </div>
 
-<div class="tabs">
-  <button class="tab active" onclick="showPage('overview')"><span class="tab-icon">📊</span>Översikt</button>
-  <button class="tab" onclick="showPage('treatments')"><span class="tab-icon">💆</span>Behandl.</button>
-  <button class="tab" onclick="showPage('customers')"><span class="tab-icon">👤</span>Kunder</button>
-  <button class="tab" onclick="showPage('expenses')"><span class="tab-icon">💸</span>Utgifter</button>
-</div>
-
-<div class="content">
-
-  <!-- OVERVIEW -->
-  <div id="page-overview" class="page active">
-    <div class="month-selector">
-      <button onclick="changeMonth(-1)">‹</button>
-      <span id="month-display"></span>
-      <button onclick="changeMonth(1)">›</button>
-    </div>
-    <div class="stats-row">
-      <div class="card">
-        <div class="card-title">Intäkter</div>
-        <div class="card-value" id="stat-revenue">0 kr</div>
-        <div class="card-sub" id="stat-revenue-count">0 behandlingar</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Utgifter</div>
-        <div class="card-value" style="color:var(--danger)" id="stat-expenses">0 kr</div>
-        <div class="card-sub" id="stat-expenses-count">0 poster</div>
-      </div>
-    </div>
-    <div class="card" style="margin-bottom:20px">
-      <div class="card-title">Vinst</div>
-      <div class="card-value" id="stat-profit">0 kr</div>
-      <div class="card-sub" id="stat-profit-margin"></div>
-    </div>
-    <div class="section-header">
-      <span class="section-title">Obetalda behandlingar</span>
-    </div>
-    <div id="unpaid-list"><div class="loading"><div class="spinner"></div><br>Laddar...</div></div>
-  </div>
-
-  <!-- TREATMENTS -->
-  <div id="page-treatments" class="page">
-    <div class="section-header">
-      <span class="section-title">Alla behandlingar</span>
-      <button class="btn btn-sm btn-ghost export-btn" onclick="exportCSV('treatments')">⬇ CSV</button>
-    </div>
-    <div id="treatments-list"><div class="loading"><div class="spinner"></div><br>Laddar...</div></div>
-  </div>
-
-  <!-- CUSTOMERS -->
-  <div id="page-customers" class="page">
-    <div class="section-header">
-      <span class="section-title">Kunder</span>
-    </div>
-    <div id="customers-list"><div class="loading"><div class="spinner"></div><br>Laddar...</div></div>
-  </div>
-
-  <!-- EXPENSES -->
-  <div id="page-expenses" class="page">
-    <div class="section-header">
-      <span class="section-title">Utgifter</span>
-      <button class="btn btn-sm btn-ghost export-btn" onclick="exportCSV('expenses')">⬇ CSV</button>
-    </div>
-    <div id="expenses-list"><div class="loading"><div class="spinner"></div><br>Laddar...</div></div>
-  </div>
-
-</div><!-- end content -->
-
-<button class="fab" onclick="openAddModal()">+</button>
-
-</div><!-- end app -->
-
-<!-- MODAL: BEHANDLING -->
+<!-- MODAL: NY BEHANDLING -->
 <div class="modal-overlay" id="modal-treatment">
   <div class="modal">
-    <div class="modal-handle"></div>
-    <h2>Ny behandling</h2>
-    <div class="form-group">
-      <label>Kundnamn</label>
-      <input type="text" id="t-customer" placeholder="Ex. Anna Lindgren" autocomplete="off" list="customer-suggestions">
-      <datalist id="customer-suggestions"></datalist>
-    </div>
-    <div class="form-group">
-      <label>Telefon (valfri)</label>
-      <input type="tel" id="t-phone" placeholder="070 000 00 00">
-    </div>
-    <div class="form-group">
-      <label>Typ av behandling</label>
+    <div class="mhandle"></div><h2>Ny behandling</h2>
+    <div class="fg"><label>Kund</label><input type="text" id="t-customer" placeholder="Sök eller skriv namn..." autocomplete="off" list="t-clist"><datalist id="t-clist"></datalist></div>
+    <div class="fg"><label>Typ av behandling</label>
       <select id="t-type">
-        <option value="">Välj typ...</option>
-        <option>Massage 30 min</option>
-        <option>Massage 60 min</option>
-        <option>Massage 90 min</option>
-        <option>Ansiktsbehandling</option>
-        <option>Fotvård</option>
-        <option>Kombinationsbehandling</option>
+        <option value="">Välj...</option>
+        <option>Massage 30 min</option><option>Massage 60 min</option><option>Massage 90 min</option>
+        <option>Ansiktsbehandling</option><option>Fotvård</option><option>Kombinationsbehandling</option>
         <option value="custom">Annan...</option>
       </select>
     </div>
-    <div class="form-group" id="t-type-custom-group" style="display:none">
-      <label>Beskriv behandling</label>
-      <input type="text" id="t-type-custom" placeholder="Ex. Sportmassage">
-    </div>
+    <div class="fg" id="t-cg" style="display:none"><label>Beskriv behandling</label><input type="text" id="t-type-c" placeholder="Ex. Sportmassage"></div>
     <div class="form-row">
-      <div class="form-group">
-        <label>Pris (kr)</label>
-        <input type="number" id="t-price" placeholder="850">
-      </div>
-      <div class="form-group">
-        <label>Datum</label>
-        <input type="date" id="t-date">
-      </div>
+      <div class="fg"><label>Pris (kr)</label><input type="number" id="t-price" placeholder="850"></div>
+      <div class="fg"><label>Datum</label><input type="date" id="t-date"></div>
     </div>
-    <div class="form-group">
-      <label>Betalmetod</label>
-      <select id="t-payment">
+    <div class="fg"><label>Betalmetod</label>
+      <select id="t-pay">
         <option value="">Ej betald ännu</option>
-        <option value="Swish">Swish</option>
-        <option value="Kontant">Kontant</option>
-        <option value="Kort">Kort</option>
-        <option value="Faktura">Faktura</option>
+        <option value="Swish">Swish</option><option value="Kontant">Kontant</option>
+        <option value="Kort">Kort</option><option value="Faktura">Faktura</option>
       </select>
     </div>
-    <div class="form-group">
-      <label>Anteckning (valfri)</label>
-      <textarea id="t-note" placeholder="Ex. Ömt i nacken, uppföljning om 3v..."></textarea>
-    </div>
-    <button class="btn" style="width:100%" onclick="saveTreatment()">Spara behandling</button>
-    <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="closeModals()">Avbryt</button>
+    <div class="fg"><label>Anteckning (valfri)</label><textarea id="t-note" placeholder="Ex. Ömt i nacken..."></textarea></div>
+    <button class="btn btn-block" onclick="saveTreatment()">Spara behandling</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:7px" onclick="closeModals()">Avbryt</button>
   </div>
 </div>
 
-<!-- MODAL: UTGIFT -->
+<!-- MODAL: NY UTGIFT -->
 <div class="modal-overlay" id="modal-expense">
   <div class="modal">
-    <div class="modal-handle"></div>
-    <h2>Ny utgift</h2>
-    <div class="form-group">
-      <label>Beskrivning</label>
-      <input type="text" id="e-desc" placeholder="Ex. Massageoljor">
-    </div>
+    <div class="mhandle"></div><h2>Ny utgift</h2>
+    <div class="fg"><label>Beskrivning</label><input type="text" id="e-desc" placeholder="Ex. Massageoljor"></div>
     <div class="form-row">
-      <div class="form-group">
-        <label>Belopp (kr)</label>
-        <input type="number" id="e-amount" placeholder="450">
-      </div>
-      <div class="form-group">
-        <label>Datum</label>
-        <input type="date" id="e-date">
-      </div>
+      <div class="fg"><label>Belopp (kr)</label><input type="number" id="e-amount" placeholder="450"></div>
+      <div class="fg"><label>Datum</label><input type="date" id="e-date"></div>
     </div>
-    <div class="form-group">
-      <label>Betalt till</label>
-      <input type="text" id="e-to" placeholder="Ex. ICA, Amazon...">
+    <div class="fg"><label>Betalt till</label><input type="text" id="e-to" placeholder="Ex. ICA, Amazon..."></div>
+    <button class="btn btn-block" onclick="saveExpense()">Spara utgift</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:7px" onclick="closeModals()">Avbryt</button>
+  </div>
+</div>
+
+<!-- MODAL: NY KUND -->
+<div class="modal-overlay" id="modal-cust-add">
+  <div class="modal">
+    <div class="mhandle"></div><h2>Ny kund</h2>
+    <div class="fg"><label>Namn *</label><input type="text" id="c-name" placeholder="Anna Lindgren"></div>
+    <div class="form-row">
+      <div class="fg"><label>Telefon</label><input type="tel" id="c-phone" placeholder="070 000 00 00"></div>
+      <div class="fg"><label>Födelsedag</label><input type="date" id="c-bday"></div>
     </div>
-    <button class="btn" style="width:100%" onclick="saveExpense()">Spara utgift</button>
-    <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="closeModals()">Avbryt</button>
+    <div class="fg"><label>E-post</label><input type="email" id="c-email" placeholder="anna@email.com"></div>
+    <div class="fg"><label>Anteckning</label><textarea id="c-note" placeholder="Ex. allergier, preferenser, ryggproblem..."></textarea></div>
+    <button class="btn btn-block" onclick="saveCustomer()">Spara kund</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:7px" onclick="closeModals()">Avbryt</button>
   </div>
 </div>
 
 <!-- MODAL: KUND DETALJ -->
-<div class="modal-overlay" id="modal-customer">
+<div class="modal-overlay" id="modal-cust-detail">
   <div class="modal">
-    <div class="modal-handle"></div>
-    <h2 id="customer-modal-name"></h2>
-    <div id="customer-modal-body"></div>
-    <button class="btn btn-ghost" style="width:100%;margin-top:16px" onclick="closeModals()">Stäng</button>
+    <div class="mhandle"></div>
+    <div id="cust-detail-body"></div>
+    <button class="btn btn-ghost btn-block" style="margin-top:13px" onclick="closeModals()">Stäng</button>
+  </div>
+</div>
+
+<!-- MODAL: BULK IMPORT -->
+<div class="modal-overlay" id="modal-bulk">
+  <div class="modal">
+    <div class="mhandle"></div><h2>Importera kunder</h2>
+    <div class="format-hint">
+      <b>Format — en kund per rad:</b><br>
+      Namn, Telefon, Email, Födelsedag, Anteckning<br><br>
+      <b>Exempel:</b><br>
+      Anna Lindgren, 070-123 45 67<br>
+      Maria Svensson, 073-987 65 43, maria@mail.com<br>
+      Eva Karlsson, , , 1985-06-15, Allergisk mot nötter<br>
+      Petra Björk
+    </div>
+    <div class="fg"><textarea class="bulk-area" id="bulk-text" placeholder="Klistra in din kundlista här..." oninput="parseBulk()"></textarea></div>
+    <div id="bulk-preview"></div>
+    <div id="bulk-count" style="font-size:12px;color:var(--muted);margin-bottom:11px"></div>
+    <button class="btn btn-block" onclick="saveBulk()">Importera alla</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:7px" onclick="closeModals()">Avbryt</button>
+  </div>
+</div>
+
+<!-- MODAL: PIN SALONA -->
+<div class="modal-overlay" id="modal-pin-s">
+  <div class="modal">
+    <div class="mhandle"></div><h2>Byt Salonas PIN</h2>
+    <div class="fg"><label>Nuvarande PIN</label><input type="password" id="ps-old" maxlength="4" inputmode="numeric" placeholder="••••"></div>
+    <div class="fg"><label>Ny PIN (4 siffror)</label><input type="password" id="ps-new" maxlength="4" inputmode="numeric" placeholder="••••"></div>
+    <div class="fg"><label>Bekräfta</label><input type="password" id="ps-conf" maxlength="4" inputmode="numeric" placeholder="••••"></div>
+    <button class="btn btn-block" onclick="changePinSalona()">Spara</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:7px" onclick="closeModals()">Avbryt</button>
+  </div>
+</div>
+
+<!-- MODAL: PIN LAJO -->
+<div class="modal-overlay" id="modal-pin-l">
+  <div class="modal">
+    <div class="mhandle"></div><h2>Byt Lajos PIN</h2>
+    <div class="fg"><label>Salonas PIN (bekräftelse)</label><input type="password" id="pl-sal" maxlength="4" inputmode="numeric" placeholder="••••"></div>
+    <div class="fg"><label>Ny PIN för Lajo</label><input type="password" id="pl-new" maxlength="4" inputmode="numeric" placeholder="••••"></div>
+    <div class="fg"><label>Bekräfta</label><input type="password" id="pl-conf" maxlength="4" inputmode="numeric" placeholder="••••"></div>
+    <button class="btn btn-block" onclick="changePinLajo()">Spara</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:7px" onclick="closeModals()">Avbryt</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────────
-const SUPABASE_URL = 'https://oeqmdiqrgfglywepatkq.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lcW1kaXFyZ2ZnbHl3ZXBhdGtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODM1MjQsImV4cCI6MjA4OTE1OTUyNH0.WHY-mJ7NGXkI9To32mLQ-3fTbg7dXRTKG6KIlZcw4V8';
-const CORRECT_PIN = '1234'; // ← Ändra till din PIN
+// ── CONFIG ─────────────────────────────────────────────────────
+const SB_URL='https://oeqmdiqrgfglywepatkq.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lcW1kaXFyZ2ZnbHl3ZXBhdGtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODM1MjQsImV4cCI6MjA4OTE1OTUyNH0.WHY-mJ7NGXkI9To32mLQ-3fTbg7dXRTKG6KIlZcw4V8';
+const OB_KEY='salona_ob5';
+const {createClient}=supabase;
+const db=createClient(SB_URL,SB_KEY);
 
-const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+// ── STATE ──────────────────────────────────────────────────────
+let page='overview', curMonth=new Date();
+let treatments=[], expenses=[], customers=[], settings={};
+let inited=false, role=null, bulk=[], obStep=0;
 
-// ── PIN ──────────────────────────────────────────────────────────
-let pinBuffer = '';
+// ── ONBOARDING ─────────────────────────────────────────────────
+function checkOb(){if(!localStorage.getItem(OB_KEY)){document.getElementById('onboarding').style.display='flex';document.getElementById('pin-screen').style.display='none';}}
+function obNext(){
+  document.getElementById('ob'+obStep).classList.remove('active');
+  document.getElementById('od'+obStep).classList.remove('active');
+  obStep++;
+  if(obStep>3){finishOb();return;}
+  document.getElementById('ob'+obStep).classList.add('active');
+  document.getElementById('od'+obStep).classList.add('active');
+  if(obStep===3)document.getElementById('ob-btn').textContent='Kom igång →';
+}
+function finishOb(){localStorage.setItem(OB_KEY,'1');document.getElementById('onboarding').style.display='none';document.getElementById('pin-screen').style.display='flex';}
 
-function pinPress(digit) {
-  if (pinBuffer.length >= 4) return;
-  pinBuffer += digit;
-  updatePinDots();
-  if (pinBuffer.length === 4) {
-    setTimeout(checkPin, 150);
-  }
-}
-function pinDel() {
-  pinBuffer = pinBuffer.slice(0, -1);
-  updatePinDots();
-  document.getElementById('pin-error').textContent = '';
-}
-function updatePinDots() {
-  for (let i = 0; i < 4; i++) {
-    document.getElementById('d' + i).classList.toggle('filled', i < pinBuffer.length);
-  }
-}
-function checkPin() {
-  if (pinBuffer === CORRECT_PIN) {
-    document.getElementById('pin-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    initApp();
-  } else {
-    document.getElementById('pin-error').textContent = 'Fel PIN-kod, försök igen';
-    pinBuffer = '';
-    updatePinDots();
-  }
-}
-function lockApp() {
-  pinBuffer = '';
-  updatePinDots();
-  document.getElementById('pin-error').textContent = '';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('pin-screen').style.display = 'flex';
+// ── PIN ────────────────────────────────────────────────────────
+let pinBuf='';
+function pp(d){if(pinBuf.length>=4)return;pinBuf+=d;updDots();if(pinBuf.length===4)setTimeout(tryPin,150);}
+function pdel(){pinBuf=pinBuf.slice(0,-1);updDots();document.getElementById('pin-err').textContent='';}
+function updDots(){for(let i=0;i<4;i++)document.getElementById('pd'+i).classList.toggle('filled',i<pinBuf.length);}
+
+async function tryPin(){
+  // Load settings first if not loaded
+  if(!Object.keys(settings).length) await loadSettings();
+  const pinS=settings['pin_salona']||'1234';
+  const pinL=settings['pin_lajo']||'5678';
+  if(pinBuf===pinS){role='salona';enter();}
+  else if(pinBuf===pinL){role='lajo';enter();}
+  else{document.getElementById('pin-err').textContent='Fel PIN-kod';pinBuf='';updDots();}
 }
 
-// ── STATE ────────────────────────────────────────────────────────
-let currentPage = 'overview';
-let currentMonth = new Date();
-let allTreatments = [];
-let allExpenses = [];
-let appInited = false;
-
-// ── INIT ─────────────────────────────────────────────────────────
-async function initApp() {
-  if (appInited) return;
-  appInited = true;
-  setDefaultDates();
-  updateMonthDisplay();
-  await loadAll();
-  setupRealtime();
+function enter(){
+  document.getElementById('pin-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  applyRole();
+  if(!inited){inited=true;initApp();}
 }
 
-async function loadAll() {
-  try {
-    const [t, e] = await Promise.all([
-      db.from('treatments').select('*').order('date', { ascending: false }),
-      db.from('expenses').select('*').order('date', { ascending: false })
+function applyRole(){
+  const isLajo=role==='lajo';
+  document.getElementById('lajo-bar').style.display=isLajo?'flex':'none';
+  document.getElementById('settings-btn').style.display=isLajo?'none':'flex';
+  document.getElementById('fab').style.display=isLajo?'none':'flex';
+  document.getElementById('cust-btns').style.display=isLajo?'none':'flex';
+}
+
+function lockApp(){pinBuf='';updDots();document.getElementById('pin-err').textContent='';document.getElementById('app').style.display='none';document.getElementById('pin-screen').style.display='flex';}
+
+// ── INIT ───────────────────────────────────────────────────────
+async function initApp(){
+  setDates();updMonth();
+  await Promise.all([loadSettings(),loadAll()]);
+  setupRT();
+}
+async function loadSettings(){
+  const{data}=await db.from('app_settings').select('*');
+  if(data)data.forEach(r=>{settings[r.key]=r.value;});
+}
+async function loadAll(){
+  try{
+    const[t,e,c]=await Promise.all([
+      db.from('treatments').select('*').order('date',{ascending:false}),
+      db.from('expenses').select('*').order('date',{ascending:false}),
+      db.from('customers').select('*').order('name')
     ]);
-    allTreatments = t.data || [];
-    allExpenses = e.data || [];
-    document.getElementById('sync-status').textContent = 'Synkroniserad ✓';
-    renderAll();
-    updateCustomerSuggestions();
-  } catch (err) {
-    document.getElementById('sync-status').textContent = 'Offline';
-  }
+    treatments=t.data||[];expenses=e.data||[];customers=c.data||[];
+    document.getElementById('sync-status').textContent='Synkroniserad ✓';
+    renderAll();updDatalist();
+  }catch(e){document.getElementById('sync-status').textContent='Offline';}
+}
+function setupRT(){
+  db.channel('rt2')
+    .on('postgres_changes',{event:'*',schema:'public',table:'treatments'},loadAll)
+    .on('postgres_changes',{event:'*',schema:'public',table:'expenses'},loadAll)
+    .on('postgres_changes',{event:'*',schema:'public',table:'customers'},loadAll)
+    .subscribe();
+}
+function renderAll(){renderOverview();renderTreatments();renderCustomers();renderExpenses();renderStats();}
+
+// ── MONTH ──────────────────────────────────────────────────────
+function chMonth(d){curMonth=new Date(curMonth.getFullYear(),curMonth.getMonth()+d,1);updMonth();renderOverview();}
+function updMonth(){const M=['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];document.getElementById('month-display').textContent=M[curMonth.getMonth()]+' '+curMonth.getFullYear();}
+function inM(s){const d=new Date(s);return d.getMonth()===curMonth.getMonth()&&d.getFullYear()===curMonth.getFullYear();}
+
+// ── OVERVIEW ───────────────────────────────────────────────────
+function renderOverview(){
+  const mT=treatments.filter(t=>inM(t.date)&&t.status==='paid');
+  const mE=expenses.filter(e=>inM(e.date));
+  const rev=mT.reduce((s,t)=>s+Number(t.price),0);
+  const exp=mE.reduce((s,e)=>s+Number(e.amount),0);
+  const profit=rev-exp;
+  document.getElementById('s-rev').textContent=kr(rev);
+  document.getElementById('s-rev-c').textContent=mT.length+' behandlingar';
+  document.getElementById('s-exp').textContent=kr(exp);
+  document.getElementById('s-exp-c').textContent=mE.length+' poster';
+  const pe=document.getElementById('s-profit');
+  pe.textContent=kr(profit);pe.className='card-val '+(profit>=0?'ppos':'pneg');
+  document.getElementById('s-margin').textContent=rev>0?Math.round((profit/rev)*100)+'% marginal':'Inga intäkter ännu';
+
+  // Kassa
+  const methods={};mT.forEach(t=>{const m=t.payment_method||'Övrigt';methods[m]=(methods[m]||0)+Number(t.price);});
+  document.getElementById('kassa-grid').innerHTML=Object.keys(methods).length===0
+    ?'<div style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:6px">Inga betalda behandlingar ännu</div>'
+    :Object.entries(methods).map(([m,v])=>`<div class="kassa-item"><div class="kassa-method">${m}</div><div class="kassa-amt">${kr(v)}</div></div>`).join('');
+
+  // Alerts
+  let html='';
+  const today=new Date();
+  customers.forEach(c=>{
+    if(!c.birthday)return;
+    const bd=new Date(c.birthday);
+    const next=new Date(today.getFullYear(),bd.getMonth(),bd.getDate());
+    if(next<today)next.setFullYear(today.getFullYear()+1);
+    const diff=Math.ceil((next-today)/864e5);
+    if(diff<=7)html+=`<div class="alert a-bday"><span>🎂</span><div><b>${c.name}</b> fyller år ${diff===0?'IDAG 🎉':diff===1?'imorgon':'om '+diff+' dagar'}!</div></div>`;
+  });
+  const inact=getInactive();
+  if(inact.length)html+=`<div class="alert a-inactive"><span>⚠️</span><div>${inact.length} kunder har inte besökt på 60+ dagar</div></div>`;
+  document.getElementById('alerts-area').innerHTML=html;
+
+  const allM=treatments.filter(t=>inM(t.date));
+  document.getElementById('month-count').textContent=allM.length+' st';
+  document.getElementById('month-list').innerHTML=allM.length===0
+    ?'<div class="empty"><div class="ei">📅</div><p>Inga behandlingar denna månad</p></div>'
+    :allM.map(t=>tHTML(t)).join('');
+
+  const unpaid=treatments.filter(t=>t.status==='unpaid');
+  document.getElementById('unpaid-list').innerHTML=unpaid.length===0
+    ?'<div class="empty"><div class="ei">✅</div><p>Alla är betalda!</p></div>'
+    :unpaid.map(t=>tHTML(t)).join('');
 }
 
-function setupRealtime() {
-  db.channel('realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'treatments' }, loadAll)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, loadAll).subscribe();
+// ── TREATMENTS ─────────────────────────────────────────────────
+function renderTreatments(){
+  document.getElementById('treatments-list').innerHTML=treatments.length===0
+    ?'<div class="empty"><div class="ei">💆</div><p>Inga behandlingar ännu</p></div>'
+    :treatments.map(t=>tHTML(t)).join('');
 }
-
-function renderAll() {
-  renderOverview();
-  renderTreatments();
-  renderCustomers();
-  renderExpenses();
-}
-
-// ── MONTH ─────────────────────────────────────────────────────────
-function changeMonth(dir) {
-  currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + dir, 1);
-  updateMonthDisplay();
-  renderOverview();
-}
-function updateMonthDisplay() {
-  const months = ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
-  document.getElementById('month-display').textContent = `${months[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
-}
-function inCurrentMonth(d) {
-  const dt = new Date(d);
-  return dt.getMonth() === currentMonth.getMonth() && dt.getFullYear() === currentMonth.getFullYear();
-}
-
-// ── OVERVIEW ──────────────────────────────────────────────────────
-function renderOverview() {
-  const monthT = allTreatments.filter(t => inCurrentMonth(t.date) && t.status === 'paid');
-  const monthE = allExpenses.filter(e => inCurrentMonth(e.date));
-  const revenue = monthT.reduce((s,t) => s + Number(t.price), 0);
-  const expenses = monthE.reduce((s,e) => s + Number(e.amount), 0);
-  const profit = revenue - expenses;
-
-  document.getElementById('stat-revenue').textContent = fmtKr(revenue);
-  document.getElementById('stat-revenue-count').textContent = `${monthT.length} behandlingar`;
-  document.getElementById('stat-expenses').textContent = fmtKr(expenses);
-  document.getElementById('stat-expenses-count').textContent = `${monthE.length} poster`;
-  const profitEl = document.getElementById('stat-profit');
-  profitEl.textContent = fmtKr(profit);
-  profitEl.className = 'card-value ' + (profit >= 0 ? 'profit-positive' : 'profit-negative');
-  document.getElementById('stat-profit-margin').textContent = revenue > 0 ? `${Math.round((profit/revenue)*100)}% marginal` : 'Inga intäkter ännu';
-
-  const unpaid = allTreatments.filter(t => t.status === 'unpaid');
-  const unpaidEl = document.getElementById('unpaid-list');
-  unpaidEl.innerHTML = unpaid.length === 0
-    ? `<div class="empty"><div class="empty-icon">✅</div><p>Alla är betalda!</p></div>`
-    : unpaid.map(t => treatmentHTML(t)).join('');
-}
-
-// ── TREATMENTS ────────────────────────────────────────────────────
-function renderTreatments() {
-  const el = document.getElementById('treatments-list');
-  el.innerHTML = allTreatments.length === 0
-    ? `<div class="empty"><div class="empty-icon">💆</div><p>Inga behandlingar ännu</p></div>`
-    : allTreatments.map(t => treatmentHTML(t)).join('');
-}
-
-function treatmentHTML(t) {
-  const paid = t.status === 'paid';
-  return `<div class="treatment-item ${paid ? 'paid' : 'unpaid'}">
-    <div class="treatment-info">
-      <div class="treatment-name">${t.customer_name}</div>
-      <div class="treatment-type">${t.treatment_type}</div>
-      ${t.note ? `<div class="note-text">${t.note}</div>` : ''}
-      <div class="treatment-date">${fmtDate(t.date)}</div>
-      <div class="action-row">
-        ${!paid ? `<button class="btn btn-sm btn-success" onclick="markPaid('${t.id}',event)">Markera betald</button>` : ''}
-        <button class="btn btn-sm btn-ghost" onclick="deleteTreatment('${t.id}',event)" style="color:var(--danger);border-color:rgba(224,92,92,0.3)">✕</button>
-      </div>
+function tHTML(t){
+  const paid=t.status==='paid';
+  const canEdit=role==='salona';
+  return `<div class="t-item ${paid?'paid':'unpaid'}">
+    <div class="t-info">
+      <div class="t-name">${t.customer_name}</div>
+      <div class="t-type">${t.treatment_type}</div>
+      ${t.note?`<div class="t-note">${t.note}</div>`:''}
+      <div class="t-date">${fd(t.date)}</div>
+      ${canEdit?`<div class="t-actions">
+        ${!paid?`<button class="btn btn-sm btn-success" onclick="markPaid('${t.id}',event)">✓ Betald</button>`:''}
+        <button class="btn btn-sm btn-ghost" onclick="delT('${t.id}',event)" style="color:var(--danger);border-color:rgba(224,92,92,.3)">✕</button>
+      </div>`:''}
     </div>
-    <div class="treatment-meta">
-      <div class="treatment-price">${fmtKr(t.price)}</div>
-      <span class="badge ${paid ? 'badge-paid' : 'badge-unpaid'}">${paid ? 'Betald' : 'Obetald'}</span>
-      ${t.payment_method ? `<span class="badge badge-payment">${t.payment_method}</span>` : ''}
+    <div class="t-meta">
+      <div class="t-price">${kr(t.price)}</div>
+      <span class="badge ${paid?'b-paid':'b-unpaid'}">${paid?'Betald':'Obetald'}</span>
+      ${t.payment_method?`<span class="badge b-method">${t.payment_method}</span>`:''}
     </div>
   </div>`;
 }
 
-// ── CUSTOMERS ─────────────────────────────────────────────────────
-function renderCustomers() {
-  const el = document.getElementById('customers-list');
-  const map = {};
-  allTreatments.forEach(t => {
-    if (!map[t.customer_name]) map[t.customer_name] = { visits: [], phone: t.customer_phone || '' };
-    map[t.customer_name].visits.push(t);
-    if (t.customer_phone) map[t.customer_name].phone = t.customer_phone;
-  });
-  const list = Object.entries(map).sort((a,b) => b[1].visits.length - a[1].visits.length);
-  if (!list.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">👤</div><p>Inga kunder ännu</p></div>`; return; }
-  el.innerHTML = list.map(([name, data]) => {
-    const total = data.visits.reduce((s,v) => s + Number(v.price), 0);
-    return `<div class="customer-item" onclick="showCustomer('${name}')">
-      <div class="customer-name">${name}</div>
-      <div class="customer-stats">
-        <div class="customer-stat"><span>${data.visits.length}</span> besök</div>
-        <div class="customer-stat"><span>${fmtKr(total)}</span> totalt</div>
-        ${data.phone ? `<div class="customer-stat">📞 <span>${data.phone}</span></div>` : ''}
+// ── CUSTOMERS ──────────────────────────────────────────────────
+function renderCustomers(){
+  const el=document.getElementById('customers-list');
+  const q=(document.getElementById('cust-search')?.value||'').toLowerCase();
+  let list=customers;
+  if(q)list=list.filter(c=>c.name.toLowerCase().includes(q)||(c.phone||'').includes(q)||(c.email||'').toLowerCase().includes(q));
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="ei">👤</div><p>${q?'Ingen hittades':'Inga kunder ännu'}</p></div>`;return;}
+  const inact=new Set(getInactive().map(c=>c.id));
+  el.innerHTML=list.map(c=>{
+    const vis=treatments.filter(t=>t.customer_name===c.name||t.customer_id===c.id);
+    const tot=vis.reduce((s,v)=>s+Number(v.price),0);
+    const last=vis[0]?.date;
+    const ini=c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="c-item" onclick="showCust('${c.id}')">
+      <div class="c-left">
+        <div class="c-name">${c.name} ${inact.has(c.id)?'<span class="inact-badge">Inaktiv</span>':''}</div>
+        <div class="c-meta">
+          <div>${vis.length} besök · <span>${kr(tot)}</span></div>
+          ${c.phone?`<div>📞 ${c.phone}</div>`:''}
+          ${last?`<div>Senast <span>${fd(last)}</span></div>`:''}
+          ${c.birthday?`<div>🎂 ${fbday(c.birthday)}</div>`:''}
+        </div>
       </div>
+      <div class="c-avatar">${ini}</div>
     </div>`;
   }).join('');
 }
-
-function showCustomer(name) {
-  const visits = allTreatments.filter(t => t.customer_name === name);
-  const total = visits.reduce((s,v) => s + Number(v.price), 0);
-  const phone = visits.find(v => v.customer_phone)?.customer_phone || '';
-  document.getElementById('customer-modal-name').textContent = name;
-  document.getElementById('customer-modal-body').innerHTML = `
-    <div style="margin-bottom:16px">
-      <span style="font-size:13px;color:var(--text-muted)">${visits.length} besök · ${fmtKr(total)} totalt</span>
-      ${phone ? `<br><a href="tel:${phone}" style="color:var(--accent);font-size:13px;text-decoration:none">📞 ${phone}</a>` : ''}
-    </div>
-    ${visits.map(v => `<div class="customer-visit">
+function getInactive(){
+  const cut=new Date();cut.setDate(cut.getDate()-60);
+  return customers.filter(c=>{const v=treatments.filter(t=>t.customer_name===c.name||t.customer_id===c.id);return v.length>0&&new Date(v[0].date)<cut;});
+}
+function showCust(id){
+  const c=customers.find(x=>x.id===id);if(!c)return;
+  const vis=treatments.filter(t=>t.customer_name===c.name||t.customer_id===id);
+  const tot=vis.reduce((s,v)=>s+Number(v.price),0);
+  const ini=c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const canEdit=role==='salona';
+  document.getElementById('cust-detail-body').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:15px">
+      <div class="c-avatar" style="width:46px;height:46px;font-size:17px">${ini}</div>
       <div>
-        <div style="font-size:14px">${v.treatment_type}</div>
-        <div style="font-size:12px;color:var(--text-muted)">${fmtDate(v.date)}</div>
-        ${v.note ? `<div class="note-text">${v.note}</div>` : ''}
+        <div style="font-family:'Playfair Display',serif;font-size:19px;color:var(--accent)">${c.name}</div>
+        ${c.phone?`<a href="tel:${c.phone}" style="font-size:13px;color:var(--muted)">📞 ${c.phone}</a>`:''}
       </div>
-      <div style="text-align:right">
-        <div style="color:var(--accent);font-size:16px">${fmtKr(v.price)}</div>
-        <span class="badge ${v.status==='paid'?'badge-paid':'badge-unpaid'}">${v.status==='paid'?'Betald':'Obetald'}</span>
-      </div>
-    </div>`).join('')}`;
-  document.getElementById('modal-customer').classList.add('open');
-}
-
-function updateCustomerSuggestions() {
-  const names = [...new Set(allTreatments.map(t => t.customer_name))];
-  document.getElementById('customer-suggestions').innerHTML = names.map(n => `<option value="${n}">`).join('');
-}
-
-// ── EXPENSES ──────────────────────────────────────────────────────
-function renderExpenses() {
-  const el = document.getElementById('expenses-list');
-  if (!allExpenses.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">💸</div><p>Inga utgifter ännu</p></div>`; return; }
-  el.innerHTML = allExpenses.map(e => `<div class="expense-item">
-    <div>
-      <div class="expense-desc">${e.description}</div>
-      <div class="expense-meta">${fmtDate(e.date)}${e.paid_to ? ' · ' + e.paid_to : ''}</div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-      <div class="expense-amount">-${fmtKr(e.amount)}</div>
-      <button class="btn btn-sm btn-ghost" onclick="deleteExpense('${e.id}',event)" style="color:var(--danger);border-color:rgba(224,92,92,0.3)">✕</button>
+    ${c.email?`<div style="font-size:13px;color:var(--muted);margin-bottom:5px">✉️ <a href="mailto:${c.email}" style="color:var(--muted)">${c.email}</a></div>`:''}
+    ${c.birthday?`<div style="font-size:13px;color:var(--muted);margin-bottom:5px">🎂 ${fbday(c.birthday)}</div>`:''}
+    ${c.note?`<div style="background:var(--bg);border-radius:var(--rs);padding:10px;font-size:13px;color:var(--muted);margin-bottom:12px;font-style:italic;line-height:1.5">${c.note}</div>`:''}
+    ${canEdit?`<div style="display:flex;gap:6px;margin-bottom:13px">
+      <button class="btn btn-sm btn-ghost btn-block" onclick="quickBook('${c.name}')">+ Boka behandling</button>
+      <button class="btn btn-sm btn-ghost btn-block" onclick="delCust('${id}')" style="color:var(--danger);border-color:rgba(224,92,92,.3)">Radera</button>
+    </div>`:''}
+    <div class="divider"></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:9px">${vis.length} besök totalt · ${kr(tot)}</div>
+    ${vis.map(v=>`<div style="background:var(--bg);border-radius:var(--rs);padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-start">
+      <div><div style="font-size:13px">${v.treatment_type}</div><div style="font-size:11px;color:var(--muted)">${fd(v.date)}</div>${v.note?`<div style="font-size:11px;color:var(--muted);font-style:italic">${v.note}</div>`:''}</div>
+      <div style="text-align:right;flex-shrink:0"><div style="color:var(--accent);font-size:15px">${kr(v.price)}</div><span class="badge ${v.status==='paid'?'b-paid':'b-unpaid'}">${v.status==='paid'?'Betald':'Obetald'}</span></div>
+    </div>`).join('')}`;
+  openModal('modal-cust-detail');
+}
+function quickBook(name){closeModals();document.getElementById('t-customer').value=name;openModal('modal-treatment');}
+
+// ── EXPENSES ───────────────────────────────────────────────────
+function renderExpenses(){
+  const el=document.getElementById('expenses-list');
+  if(!expenses.length){el.innerHTML='<div class="empty"><div class="ei">💸</div><p>Inga utgifter ännu</p></div>';return;}
+  el.innerHTML=expenses.map(e=>`<div class="e-item">
+    <div><div class="e-desc">${e.description}</div><div class="e-meta">${fd(e.date)}${e.paid_to?' · '+e.paid_to:''}</div></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+      <div class="e-amt">-${kr(e.amount)}</div>
+      ${role==='salona'?`<button class="btn btn-sm btn-ghost" onclick="delE('${e.id}',event)" style="color:var(--danger);border-color:rgba(224,92,92,.3)">✕</button>`:''}
     </div>
   </div>`).join('');
 }
 
-// ── SAVE ──────────────────────────────────────────────────────────
-async function saveTreatment() {
-  const typeEl = document.getElementById('t-type');
-  const type = typeEl.value === 'custom' ? document.getElementById('t-type-custom').value : typeEl.value;
-  const customer = document.getElementById('t-customer').value.trim();
-  const phone = document.getElementById('t-phone').value.trim();
-  const price = document.getElementById('t-price').value;
-  const date = document.getElementById('t-date').value;
-  const payment = document.getElementById('t-payment').value;
-  const note = document.getElementById('t-note').value.trim();
-  if (!customer || !type || !price || !date) { showToast('Fyll i alla obligatoriska fält'); return; }
-  const { error } = await db.from('treatments').insert({
-    customer_name: customer, customer_phone: phone || null,
-    treatment_type: type, price: Number(price), date,
-    payment_method: payment || null, status: payment ? 'paid' : 'unpaid', note: note || null
-  });
-  if (error) { showToast('Fel: ' + error.message); return; }
-  showToast('Behandling sparad ✓');
-  closeModals(); resetTreatmentForm(); await loadAll();
+// ── STATS ──────────────────────────────────────────────────────
+function renderStats(){
+  const el=document.getElementById('stats-content');
+  if(!treatments.length){el.innerHTML='<div class="empty"><div class="ei">📈</div><p>Ingen data ännu</p></div>';return;}
+  const paid=treatments.filter(t=>t.status==='paid');
+  const totalRev=paid.reduce((s,t)=>s+Number(t.price),0);
+  const totalExp=expenses.reduce((s,e)=>s+Number(e.amount),0);
+  const profit=totalRev-totalExp;
+  const avg=paid.length?Math.round(totalRev/paid.length):0;
+  const types={};treatments.forEach(t=>{types[t.treatment_type]=(types[t.treatment_type]||0)+1;});
+  const topType=Object.entries(types).sort((a,b)=>b[1]-a[1])[0];
+  const byM={};paid.forEach(t=>{const k=t.date.slice(0,7);byM[k]=(byM[k]||0)+Number(t.price);});
+  const bestM=Object.entries(byM).sort((a,b)=>b[1]-a[1])[0];
+  const te=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const mx=te[0]?.[1]||1;
+  el.innerHTML=`
+    <div class="card" style="margin-bottom:11px"><div class="card-label">Totalt intjänat</div><div class="card-val">${kr(totalRev)}</div><div class="card-sub">${paid.length} betalda behandlingar</div></div>
+    <div class="stats-row">
+      <div class="card"><div class="card-label">Total vinst</div><div class="card-val ${profit>=0?'ppos':'pneg'}">${kr(profit)}</div></div>
+      <div class="card"><div class="card-label">Snittbelopp</div><div class="card-val">${kr(avg)}</div></div>
+    </div>
+    ${topType?`<div class="card" style="margin-bottom:11px"><div class="card-label">Populäraste behandlingen</div><div style="font-size:15px;font-weight:500;margin-bottom:2px">${topType[0]}</div><div class="card-sub">${topType[1]} bokningar</div></div>`:''}
+    ${bestM?`<div class="card" style="margin-bottom:11px"><div class="card-label">Bästa månaden</div><div style="font-size:14px;font-weight:500;margin-bottom:2px">${fmk(bestM[0])}</div><div class="card-val">${kr(bestM[1])}</div></div>`:''}
+    <div class="card"><div class="card-label">Behandlingsfördelning</div>
+      ${te.map(([type,count])=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${type}</span><span style="color:var(--accent)">${count} st</span></div><div class="progress-bar"><div class="progress-fill" style="width:${Math.round(count/mx*100)}%"></div></div></div>`).join('')}
+    </div>`;
 }
 
-async function saveExpense() {
-  const desc = document.getElementById('e-desc').value.trim();
-  const amount = document.getElementById('e-amount').value;
-  const date = document.getElementById('e-date').value;
-  const to = document.getElementById('e-to').value.trim();
-  if (!desc || !amount || !date) { showToast('Fyll i alla obligatoriska fält'); return; }
-  const { error } = await db.from('expenses').insert({ description: desc, amount: Number(amount), date, paid_to: to || null });
-  if (error) { showToast('Fel: ' + error.message); return; }
-  showToast('Utgift sparad ✓');
-  closeModals(); resetExpenseForm(); await loadAll();
+// ── SAVE ───────────────────────────────────────────────────────
+async function saveTreatment(){
+  if(role!=='salona'){showToast('Läsläge — kan inte spara');return;}
+  const typeEl=document.getElementById('t-type');
+  const type=typeEl.value==='custom'?document.getElementById('t-type-c').value:typeEl.value;
+  const customer=document.getElementById('t-customer').value.trim();
+  const price=document.getElementById('t-price').value;
+  const date=document.getElementById('t-date').value;
+  const pay=document.getElementById('t-pay').value;
+  const note=document.getElementById('t-note').value.trim();
+  if(!customer||!type||!price||!date){showToast('Fyll i alla fält');return;}
+  const cust=customers.find(c=>c.name.toLowerCase()===customer.toLowerCase());
+  const{error}=await db.from('treatments').insert({customer_name:customer,customer_id:cust?.id||null,treatment_type:type,price:Number(price),date,payment_method:pay||null,status:pay?'paid':'unpaid',note:note||null});
+  if(error){showToast('Fel: '+error.message);return;}
+  showToast('Behandling sparad ✓');closeModals();resetForm('t');await loadAll();
 }
-
-async function markPaid(id, event) {
+async function saveExpense(){
+  if(role!=='salona')return;
+  const desc=document.getElementById('e-desc').value.trim();
+  const amount=document.getElementById('e-amount').value;
+  const date=document.getElementById('e-date').value;
+  const to=document.getElementById('e-to').value.trim();
+  if(!desc||!amount||!date){showToast('Fyll i alla fält');return;}
+  const{error}=await db.from('expenses').insert({description:desc,amount:Number(amount),date,paid_to:to||null});
+  if(error){showToast('Fel: '+error.message);return;}
+  showToast('Utgift sparad ✓');closeModals();resetForm('e');await loadAll();
+}
+async function saveCustomer(){
+  if(role!=='salona')return;
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){showToast('Namn krävs');return;}
+  const{error}=await db.from('customers').insert({name,phone:document.getElementById('c-phone').value.trim()||null,email:document.getElementById('c-email').value.trim()||null,birthday:document.getElementById('c-bday').value||null,note:document.getElementById('c-note').value.trim()||null});
+  if(error){showToast('Fel: '+error.message);return;}
+  showToast(name+' sparad ✓');closeModals();resetForm('c');await loadAll();
+}
+async function markPaid(id,event){
   event.stopPropagation();
-  const payment = prompt('Betalmetod:', 'Swish');
-  if (!payment) return;
-  await db.from('treatments').update({ status: 'paid', payment_method: payment }).eq('id', id);
-  await loadAll();
+  if(role!=='salona')return;
+  const pay=prompt('Betalmetod:','Swish');if(pay===null)return;
+  await db.from('treatments').update({status:'paid',payment_method:pay}).eq('id',id);await loadAll();
+}
+async function delT(id,e){e.stopPropagation();if(role!=='salona')return;if(!confirm('Radera behandling?'))return;await db.from('treatments').delete().eq('id',id);await loadAll();}
+async function delE(id,e){e.stopPropagation();if(role!=='salona')return;if(!confirm('Radera utgift?'))return;await db.from('expenses').delete().eq('id',id);await loadAll();}
+async function delCust(id){if(role!=='salona')return;if(!confirm('Radera kund?'))return;await db.from('customers').delete().eq('id',id);closeModals();await loadAll();}
+
+// ── PIN CHANGE ─────────────────────────────────────────────────
+async function changePinSalona(){
+  const old=document.getElementById('ps-old').value;
+  const n=document.getElementById('ps-new').value;
+  const c=document.getElementById('ps-conf').value;
+  if(old!==settings['pin_salona']){showToast('Fel nuvarande PIN');return;}
+  if(!/^\d{4}$/.test(n)){showToast('PIN måste vara 4 siffror');return;}
+  if(n!==c){showToast('PIN-koderna matchar inte');return;}
+  await db.from('app_settings').update({value:n}).eq('key','pin_salona');
+  settings['pin_salona']=n;showToast('Salonas PIN ändrad ✓');closeModals();
+  ['ps-old','ps-new','ps-conf'].forEach(id=>document.getElementById(id).value='');
+}
+async function changePinLajo(){
+  const sal=document.getElementById('pl-sal').value;
+  const n=document.getElementById('pl-new').value;
+  const c=document.getElementById('pl-conf').value;
+  if(sal!==settings['pin_salona']){showToast('Fel Salonas PIN');return;}
+  if(!/^\d{4}$/.test(n)){showToast('PIN måste vara 4 siffror');return;}
+  if(n!==c){showToast('PIN-koderna matchar inte');return;}
+  await db.from('app_settings').update({value:n}).eq('key','pin_lajo');
+  settings['pin_lajo']=n;showToast('Lajos PIN ändrad ✓');closeModals();
+  ['pl-sal','pl-new','pl-conf'].forEach(id=>document.getElementById(id).value='');
 }
 
-async function deleteTreatment(id, event) {
-  event.stopPropagation();
-  if (!confirm('Radera behandling?')) return;
-  await db.from('treatments').delete().eq('id', id);
-  await loadAll();
+// ── BULK ───────────────────────────────────────────────────────
+function parseBulk(){
+  const text=document.getElementById('bulk-text').value;
+  const lines=text.split('\n').filter(l=>l.trim());
+  bulk=lines.map(line=>{
+    const p=line.split(',').map(x=>x.trim());
+    return{
+      name:p[0]||null,
+      phone:p[1]||null,
+      email:p[2]||null,
+      birthday:p[3]&&p[3].match(/\d{4}-\d{2}-\d{2}/)?p[3]:null,
+      note:p[4]||null
+    };
+  }).filter(r=>r.name);
+  const pre=document.getElementById('bulk-preview');
+  const cnt=document.getElementById('bulk-count');
+  if(!bulk.length){pre.innerHTML='';cnt.textContent='';return;}
+  cnt.textContent=bulk.length+' kunder redo att importeras';
+  pre.innerHTML=`<div style="margin-bottom:8px">`+bulk.slice(0,6).map(r=>`
+    <div class="bulk-row">
+      <span style="font-weight:500;color:var(--text)">${r.name}</span>
+      <span style="color:var(--muted);font-size:11px">${[r.phone,r.email,r.birthday].filter(Boolean).join(' · ')||'—'}</span>
+    </div>`).join('')+(bulk.length>6?`<div style="font-size:11px;color:var(--muted);padding:3px 8px">...och ${bulk.length-6} till</div>`:'')+`</div>`;
+}
+async function saveBulk(){
+  if(!bulk.length){showToast('Ingen data');return;}
+  const existing=new Set(customers.map(c=>c.name.toLowerCase()));
+  const newOnes=bulk.filter(r=>!existing.has(r.name.toLowerCase()));
+  if(!newOnes.length){showToast('Alla kunder finns redan');return;}
+  const{error}=await db.from('customers').insert(newOnes);
+  if(error){showToast('Fel: '+error.message);return;}
+  showToast(newOnes.length+' kunder importerade ✓');
+  document.getElementById('bulk-text').value='';
+  document.getElementById('bulk-preview').innerHTML='';
+  document.getElementById('bulk-count').textContent='';
+  bulk=[];closeModals();await loadAll();
 }
 
-async function deleteExpense(id, event) {
-  event.stopPropagation();
-  if (!confirm('Radera utgift?')) return;
-  await db.from('expenses').delete().eq('id', id);
-  await loadAll();
-}
-
-// ── EXPORT CSV ────────────────────────────────────────────────────
-function exportCSV(type) {
-  let rows, filename, headers;
-  if (type === 'treatments') {
-    headers = ['Datum','Kund','Telefon','Behandling','Pris','Betalmetod','Status','Anteckning'];
-    rows = allTreatments.map(t => [t.date, t.customer_name, t.customer_phone||'', t.treatment_type, t.price, t.payment_method||'', t.status, (t.note||'').replace(/,/g,'')]);
-    filename = 'salona-behandlingar.csv';
-  } else {
-    headers = ['Datum','Beskrivning','Belopp','Betalt till'];
-    rows = allExpenses.map(e => [e.date, e.description, e.amount, e.paid_to||'']);
-    filename = 'salona-utgifter.csv';
+// ── EXPORT ─────────────────────────────────────────────────────
+function exportCSV(type){
+  let rows,fn,h;
+  if(type==='treatments'){
+    h=['Datum','Kund','Behandling','Pris','Betalmetod','Status','Anteckning'];
+    rows=treatments.map(t=>[t.date,t.customer_name,t.treatment_type,t.price,t.payment_method||'',t.status,(t.note||'').replace(/,/g,';')]);
+    fn='salona-behandlingar.csv';
+  }else{
+    h=['Datum','Beskrivning','Belopp','Betalt till'];
+    rows=expenses.map(e=>[e.date,e.description,e.amount,e.paid_to||'']);
+    fn='salona-utgifter.csv';
   }
-  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-  showToast('Exporterad ✓');
+  const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=fn;a.click();
+  URL.revokeObjectURL(url);showToast('Exporterad ✓');
 }
 
-// ── UI ────────────────────────────────────────────────────────────
-function showPage(page) {
-  currentPage = page;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.querySelectorAll('.tab')[['overview','treatments','customers','expenses'].indexOf(page)].classList.add('active');
+// ── UI ─────────────────────────────────────────────────────────
+function showPage(p){
+  page=p;
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const idx=['overview','treatments','customers','expenses'].indexOf(p);
+  if(idx>=0)document.querySelectorAll('.tab')[idx].classList.add('active');
+  const hideFab=['stats','settings'].includes(p)||(role==='lajo');
+  document.getElementById('fab').style.display=hideFab?'none':'flex';
 }
-
-function openAddModal() {
-  document.getElementById(currentPage === 'expenses' ? 'modal-expense' : 'modal-treatment').classList.add('open');
+function openAddModal(){openModal(page==='expenses'?'modal-expense':'modal-treatment');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModals(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open'));}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModals();}));
+document.getElementById('t-type').addEventListener('change',function(){document.getElementById('t-cg').style.display=this.value==='custom'?'block':'none';});
+function updDatalist(){document.getElementById('t-clist').innerHTML=customers.map(c=>`<option value="${c.name}">`).join('');}
+function setDates(){const t=new Date().toISOString().split('T')[0];document.getElementById('t-date').value=t;document.getElementById('e-date').value=t;}
+function resetForm(type){
+  if(type==='t'){['t-customer','t-price','t-note'].forEach(id=>document.getElementById(id).value='');document.getElementById('t-type').value='';document.getElementById('t-pay').value='';setDates();}
+  else if(type==='e'){['e-desc','e-amount','e-to'].forEach(id=>document.getElementById(id).value='');setDates();}
+  else if(type==='c'){['c-name','c-phone','c-email','c-bday','c-note'].forEach(id=>document.getElementById(id).value='');}
 }
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
-function closeModals() {
-  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+// ── FORMAT ─────────────────────────────────────────────────────
+function kr(n){return Math.round(n).toLocaleString('sv-SE')+' kr';}
+function fd(d){if(!d)return'';return new Date(d).toLocaleDateString('sv-SE',{day:'numeric',month:'short'});}
+function fbday(d){
+  if(!d)return'';
+  const bd=new Date(d);
+  const M=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  const today=new Date();
+  const next=new Date(today.getFullYear(),bd.getMonth(),bd.getDate());
+  if(next<today)next.setFullYear(today.getFullYear()+1);
+  const diff=Math.ceil((next-today)/864e5);
+  const age=next.getFullYear()-bd.getFullYear();
+  return `${bd.getDate()} ${M[bd.getMonth()]} (fyller ${age}${diff<=7?' — om '+diff+'d 🎂':''})`;
 }
+function fmk(k){const M=['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];const[y,m]=k.split('-');return M[parseInt(m)-1]+' '+y;}
 
-document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) closeModals(); }));
-document.getElementById('t-type').addEventListener('change', function() {
-  document.getElementById('t-type-custom-group').style.display = this.value === 'custom' ? 'block' : 'none';
-});
-
-function setDefaultDates() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('t-date').value = today;
-  document.getElementById('e-date').value = today;
-}
-
-function resetTreatmentForm() {
-  ['t-customer','t-phone','t-price','t-note'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('t-type').value = '';
-  document.getElementById('t-payment').value = '';
-  setDefaultDates();
-}
-
-function resetExpenseForm() {
-  ['e-desc','e-amount','e-to'].forEach(id => document.getElementById(id).value = '');
-  setDefaultDates();
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function fmtKr(n) { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }
-function fmtDate(d) { if (!d) return ''; return new Date(d).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }); }
+// ── BOOT ───────────────────────────────────────────────────────
+checkOb();
 </script>
 </body>
 </html>
