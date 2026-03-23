@@ -45,6 +45,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .tab{flex:1;min-width:56px;padding:10px 3px;background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .2s;border-bottom:2px solid transparent;display:flex;flex-direction:column;align-items:center;gap:3px}
 .tab .ti{font-size:14px}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* BOKNINGSKNAPP — special styling */
+.tab.boka-tab{background:rgba(201,169,110,0.08);border-right:none}
+.tab.boka-tab.active,.tab.boka-tab:hover{background:rgba(201,169,110,0.18);color:var(--accent)}
 .content{padding:15px 13px 100px}
 .page{display:none}.page.active{display:block}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
@@ -136,6 +139,19 @@ textarea{resize:none;height:70px}
 .toast.show{opacity:1}
 .divider{height:1px;background:var(--border);margin:12px 0}
 .ppos{color:var(--success)!important}.pneg{color:var(--danger)!important}
+/* BOKNINGSSIDA */
+.boka-hero{background:linear-gradient(135deg,rgba(201,169,110,0.15),rgba(201,169,110,0.05));border:1px solid var(--border2);border-radius:var(--r);padding:24px;text-align:center;margin-bottom:16px}
+.boka-hero .bh-icon{font-size:48px;margin-bottom:12px}
+.boka-hero h2{font-family:'Playfair Display',serif;font-size:22px;color:var(--accent);margin-bottom:8px}
+.boka-hero p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.boka-btn{display:block;width:100%;background:var(--accent);color:#1a1a2e;border:none;border-radius:var(--rs);padding:16px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .2s;text-decoration:none;text-align:center}
+.boka-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+.boka-info{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.boka-info-title{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px}
+.boka-info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.boka-info-row:last-child{border-bottom:none}
+.boka-info-row .label{color:var(--muted)}
+.boka-info-row .value{color:var(--accent);font-weight:500}
 </style>
 </head>
 <body>
@@ -144,7 +160,7 @@ textarea{resize:none;height:70px}
   <div class="ob-step active" id="ob0"><div class="ob-icon">✦</div><div class="ob-title">Välkommen Salona</div><div class="ob-text">Din personliga app för kunder, behandlingar och bokföring — alltid synkad, alltid tillgänglig.</div></div>
   <div class="ob-step" id="ob1"><div class="ob-icon">👤</div><div class="ob-title">Lägg in dina kunder</div><div class="ob-text">En i taget eller hela listan på en gång. Namn, telefon, email, födelsedag — allt samlat.</div></div>
   <div class="ob-step" id="ob2"><div class="ob-icon">💆</div><div class="ob-title">Registrera behandlingar</div><div class="ob-text">10 sekunder per behandling. Appen håller koll på vad som är betalt.</div></div>
-  <div class="ob-step" id="ob3"><div class="ob-icon">🔐</div><div class="ob-title">Två inlogg</div><div class="ob-text"><b style="color:var(--accent)">Salona</b> — full åtkomst<br><br><b style="color:var(--accent)">Lajo</b> — ser allt men kan inte ändra<br><br>Samma data, i realtid.</div></div>
+  <div class="ob-step" id="ob3"><div class="ob-icon">📅</div><div class="ob-title">Boka tider</div><div class="ob-text">Nytt! Boka kunder direkt i appen med kalender och flexibla tider 10:00–19:00.</div></div>
   <div class="ob-dots"><div class="ob-dot active" id="od0"></div><div class="ob-dot" id="od1"></div><div class="ob-dot" id="od2"></div><div class="ob-dot" id="od3"></div></div>
   <button class="btn btn-block" id="ob-btn" onclick="obNext()" style="max-width:250px;margin-top:10px">Nästa →</button>
   <button class="btn btn-ghost" onclick="finishOb()" style="max-width:250px;font-size:12px;padding:8px;margin-top:4px">Hoppa över</button>
@@ -179,6 +195,7 @@ textarea{resize:none;height:70px}
     <button class="tab" onclick="showPage('treatments')"><span class="ti">💆</span>Behandl.</button>
     <button class="tab" onclick="showPage('customers')"><span class="ti">👤</span>Kunder</button>
     <button class="tab" onclick="showPage('expenses')"><span class="ti">💸</span>Utgifter</button>
+    <button class="tab boka-tab" onclick="showPage('booking')"><span class="ti">📅</span>Boka</button>
   </div>
   <div class="content">
 
@@ -224,6 +241,29 @@ textarea{resize:none;height:70px}
       <div id="stats-content"></div>
     </div>
 
+    <!-- NY BOKNINGSSIDA -->
+    <div id="page-booking" class="page">
+      <div class="boka-hero">
+        <div class="bh-icon">📅</div>
+        <h2>Boka en tid</h2>
+        <p>Välj datum, tid och behandling direkt i bokningskalendern. Flexibla tider 10:00–19:00.</p>
+        <a href="booking.html" class="boka-btn">Öppna bokningskalender →</a>
+      </div>
+      <div class="boka-info">
+        <div class="boka-info-title">⏰ Arbetstider</div>
+        <div class="boka-info-row"><span class="label">Måndag – Fredag</span><span class="value">10:00 – 19:00</span></div>
+        <div class="boka-info-row"><span class="label">Lördag</span><span class="value">10:00 – 19:00</span></div>
+        <div class="boka-info-row"><span class="label">Söndag</span><span class="value">10:00 – 19:00</span></div>
+      </div>
+      <div class="boka-info">
+        <div class="boka-info-title">💆 Behandlingar & Priser</div>
+        <div class="boka-info-row"><span class="label">🌿 Klassisk massage</span><span class="value">800 kr · 60 min</span></div>
+        <div class="boka-info-row"><span class="label">💪 Djupvävnad</span><span class="value">950 kr · 75 min</span></div>
+        <div class="boka-info-row"><span class="label">🌸 Avslappning</span><span class="value">700 kr · 45 min</span></div>
+      </div>
+      <div id="upcoming-bookings-preview"></div>
+    </div>
+
     <div id="page-settings" class="page">
       <div class="sh"><span class="st">Inställningar</span></div>
       <div class="set-item" onclick="openModal('modal-pin-s')"><div><div class="set-label">🔐 Salonas PIN-kod</div><div class="set-sub">Ändra Salonas PIN</div></div><div style="color:var(--muted)">›</div></div>
@@ -233,7 +273,7 @@ textarea{resize:none;height:70px}
       <div class="set-item" onclick="showExport('expenses')"><div><div class="set-label">📥 Exportera utgifter</div><div class="set-sub">Visa och kopiera data</div></div><div style="color:var(--muted)">›</div></div>
       <div style="margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs)">
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Version</div>
-        <div style="font-size:13px;color:var(--muted)">Salona Massage v5.3 · Synkad i molnet ✓</div>
+        <div style="font-size:13px;color:var(--muted)">Salona Massage v6.0 · Bokningssystem aktiverat ✓</div>
       </div>
     </div>
 
@@ -241,7 +281,7 @@ textarea{resize:none;height:70px}
   <button class="fab" id="fab" onclick="openAddModal()">+</button>
 </div>
 
-<!-- MODAL: NY BEHANDLING -->
+<!-- ALLA MODALER (samma som tidigare) -->
 <div class="modal-overlay" id="modal-treatment">
   <div class="modal">
     <div class="mhandle"></div><h2>Ny behandling</h2>
@@ -274,7 +314,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL: NY UTGIFT -->
 <div class="modal-overlay" id="modal-expense">
   <div class="modal">
     <div class="mhandle"></div><h2>Ny utgift</h2>
@@ -289,7 +328,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL: NY KUND -->
 <div class="modal-overlay" id="modal-cust-add">
   <div class="modal">
     <div class="mhandle"></div><h2>Ny kund</h2>
@@ -305,7 +343,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL: REDIGERA KUND -->
 <div class="modal-overlay" id="modal-cust-edit">
   <div class="modal">
     <div class="mhandle"></div><h2>Redigera kund</h2>
@@ -322,7 +359,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL: KUND DETALJ -->
 <div class="modal-overlay" id="modal-cust-detail">
   <div class="modal">
     <div class="mhandle"></div>
@@ -331,7 +367,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL: BULK -->
 <div class="modal-overlay" id="modal-bulk">
   <div class="modal">
     <div class="mhandle"></div><h2>Importera kunder</h2>
@@ -352,7 +387,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL: EXPORT -->
 <div class="modal-overlay" id="modal-export">
   <div class="modal">
     <div class="mhandle"></div>
@@ -366,7 +400,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL: PIN SALONA -->
 <div class="modal-overlay" id="modal-pin-s">
   <div class="modal">
     <div class="mhandle"></div><h2>Byt Salonas PIN</h2>
@@ -378,7 +411,6 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- MODAL: PIN LAJO -->
 <div class="modal-overlay" id="modal-pin-l">
   <div class="modal">
     <div class="mhandle"></div><h2>Byt Lajos PIN</h2>
@@ -395,7 +427,7 @@ textarea{resize:none;height:70px}
 <script>
 const SB_URL='https://oeqmdiqrgfglywepatkq.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lcW1kaXFyZ2ZnbHl3ZXBhdGtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODM1MjQsImV4cCI6MjA4OTE1OTUyNH0.WHY-mJ7NGXkI9To32mLQ-3fTbg7dXRTKG6KIlZcw4V8';
-const OB_KEY='salona_ob5';
+const OB_KEY='salona_ob6';
 const {createClient}=supabase;
 const db=createClient(SB_URL,SB_KEY);
 let page='overview',curMonth=new Date();
@@ -457,13 +489,13 @@ async function loadAll(){
   }catch(e){document.getElementById('sync-status').textContent='Offline';}
 }
 function setupRT(){
-  db.channel('rt5')
+  db.channel('rt6')
     .on('postgres_changes',{event:'*',schema:'public',table:'treatments'},loadAll)
     .on('postgres_changes',{event:'*',schema:'public',table:'expenses'},loadAll)
     .on('postgres_changes',{event:'*',schema:'public',table:'customers'},loadAll)
     .subscribe();
 }
-function renderAll(){renderOverview();renderTreatments();renderCustomers();renderExpenses();renderStats();}
+function renderAll(){renderOverview();renderTreatments();renderCustomers();renderExpenses();renderStats();renderBookingPreview();}
 
 function chMonth(d){curMonth=new Date(curMonth.getFullYear(),curMonth.getMonth()+d,1);updMonth();renderOverview();}
 function updMonth(){const M=['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];document.getElementById('month-display').textContent=M[curMonth.getMonth()]+' '+curMonth.getFullYear();}
@@ -504,6 +536,20 @@ function renderOverview(){
   document.getElementById('month-list').innerHTML=allM.length===0?'<div class="empty"><div class="ei">📅</div><p>Inga behandlingar denna månad</p></div>':allM.map(t=>tHTML(t)).join('');
   const unpaid=treatments.filter(t=>t.status==='unpaid');
   document.getElementById('unpaid-list').innerHTML=unpaid.length===0?'<div class="empty"><div class="ei">✅</div><p>Alla är betalda!</p></div>':unpaid.map(t=>tHTML(t)).join('');
+}
+
+async function renderBookingPreview(){
+  try{
+    const today=new Date().toISOString().split('T')[0];
+    const{data:bookings}=await db.from('bookings').select('*').gte('booking_date',today).neq('status','Avbokad').order('booking_date').order('start_time').limit(5);
+    const el=document.getElementById('upcoming-bookings-preview');
+    if(!el)return;
+    if(!bookings||bookings.length===0){
+      el.innerHTML=`<div class="boka-info"><div class="boka-info-title">📋 Kommande bokningar</div><div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">Inga kommande bokningar</div></div>`;
+      return;
+    }
+    el.innerHTML=`<div class="boka-info"><div class="boka-info-title">📋 Kommande bokningar</div>${bookings.map(b=>`<div class="boka-info-row"><span class="label">${b.booking_date} kl ${b.start_time.substring(0,5)}</span><span class="value">${b.customer_name}</span></div>`).join('')}</div>`;
+  }catch(e){}
 }
 
 function renderTreatments(){
@@ -796,9 +842,11 @@ function showPage(p){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
-  const idx=['overview','treatments','customers','expenses'].indexOf(p);
+  const tabs=['overview','treatments','customers','expenses','booking'];
+  const idx=tabs.indexOf(p);
   if(idx>=0)document.querySelectorAll('.tab')[idx].classList.add('active');
-  document.getElementById('fab').style.display=(['stats','settings'].includes(p)||role==='lajo')?'none':'flex';
+  document.getElementById('fab').style.display=(['stats','settings','booking'].includes(p)||role==='lajo')?'none':'flex';
+  if(p==='booking')renderBookingPreview();
 }
 function openAddModal(){openModal(page==='expenses'?'modal-expense':'modal-treatment');}
 function openModal(id){document.getElementById(id).classList.add('open');}
