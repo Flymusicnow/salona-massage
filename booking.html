@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boka Tid — Salonas Massage</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --accent: #c9a96e;
+    --accent2: #e8c99a;
+    --text: #f0ece4;
+    --text2: #9a9080;
+    --green: #4caf7d;
+    --red: #e05c5c;
+    --border: #2e2e2e;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Georgia', serif;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .header {
+    text-align: center;
+    padding: 30px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: 1.6rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: normal;
+  }
+
+  .header p {
+    color: var(--text2);
+    font-size: 0.85rem;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* KALENDER */
+  .calendar-section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .cal-nav {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cal-nav:hover { background: var(--accent); color: var(--bg); }
+
+  .cal-month {
+    font-size: 1rem;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .cal-day-name {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text2);
+    padding: 4px 0;
+    letter-spacing: 1px;
+  }
+
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .cal-day:hover:not(.empty):not(.past) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .cal-day.selected {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: bold;
+  }
+
+  .cal-day.today {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  .cal-day.past {
+    color: var(--border);
+    cursor: not-allowed;
+  }
+
+  .cal-day.has-booking {
+    background: var(--surface2);
+    border-color: var(--accent);
+  }
+
+  .cal-day.has-booking::after {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: absolute;
+    bottom: 4px;
+  }
+
+  .cal-day { position: relative; }
+
+  /* TIDVAL */
+  .time-section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+
+  .time-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .time-slot {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+
+  .time-slot:hover:not(.booked) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .time-slot.selected {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: bold;
+  }
+
+  .time-slot.booked {
+    opacity: 0.3;
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+
+  /* BEHANDLING */
+  .treatment-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .treatment-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .treatment-card:hover { border-color: var(--accent); }
+
+  .treatment-card.selected {
+    border-color: var(--accent);
+    background: rgba(201, 169, 110, 0.12);
+  }
+
+  .treatment-card .icon { font-size: 1.6rem; margin-bottom: 6px; }
+
+  .treatment-card .name {
+    font-size: 0.75rem;
+    color: var(--text);
+    letter-spacing: 0.5px;
+  }
+
+  .treatment-card .duration {
+    font-size: 0.7rem;
+    color: var(--text2);
+    margin-top: 3px;
+  }
+
+  /* KUND */
+  .form-section {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+
+  .customer-select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .customer-select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .input-field {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-top: 10px;
+    font-family: inherit;
+    resize: vertical;
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .price-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .price-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+  }
+
+  .price-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .payment-select {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .payment-select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  /* SAMMANFATTNING */
+  .summary-box {
+    background: rgba(201, 169, 110, 0.08);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .summary-box h3 {
+    color: var(--accent);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .label { color: var(--text2); }
+  .summary-row .value { color: var(--text); font-weight: bold; }
+
+  /* KNAPP */
+  .btn-book {
+    width: 100%;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 18px;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'Georgia', serif;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+
+  .btn-book:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+  }
+
+  .btn-book:active { transform: translateY(0); }
+  .btn-book:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* DAGVY */
+  .day-view {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+
+  .day-booking-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface2);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .day-booking-time {
+    font-size: 0.8rem;
+    color: var(--accent);
+    min-width: 80px;
+    font-weight: bold;
+  }
+
+  .day-booking-info { flex: 1; }
+  .day-booking-name { font-size: 0.9rem; color: var(--text); }
+
+  .day-booking-treatment {
+    font-size: 0.75rem;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  .status-badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .status-Bokad { background: rgba(201,169,110,0.15); color: var(--accent); }
+  .status-Genomförd { background: rgba(76,175,125,0.15); color: var(--green); }
+  .status-Avbokad { background: rgba(224,92,92,0.15); color: var(--red); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--green);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    transition: transform 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--red); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px;
+    color: var(--text2);
+    font-size: 0.85rem;
+  }
+
+  .empty-state .icon { font-size: 2rem; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Salonas Massage</h1>
+  <p>Bokningssystem</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('ny')">✨ Ny bokning</div>
+  <div class="tab" onclick="switchTab('dag')">📅 Dagvy</div>
+  <div class="tab" onclick="switchTab('lista')">📋 Alla</div>
+</div>
+
+<!-- NY BOKNING -->
+<div id="tab-ny" class="tab-content active">
+
+  <!-- KALENDER -->
+  <div class="calendar-section">
+    <div class="section-title">📅 Välj datum</div>
+    <div class="cal-header">
+      <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+      <span class="cal-month" id="calMonthTitle"></span>
+      <button class="cal-nav" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <!-- TIDER -->
+  <div class="time-section" id="timeSection" style="display:none">
+    <div class="section-title">🕐 Välj tid</div>
+    <div style="font-size:0.8rem;color:var(--text2);margin-top:-8px;margin-bottom:12px;">
+      Tillgängliga tider 10:00–19:00
+    </div>
+    <div class="time-grid" id="timeGrid"></div>
+  </div>
+
+  <!-- BEHANDLING -->
+  <div class="form-section" id="treatmentSection" style="display:none">
+    <div class="section-title">💆 Behandling</div>
+    <div class="treatment-grid">
+      <div class="treatment-card" onclick="selectTreatment('Klassisk massage', 60, 800)">
+        <div class="icon">🌿</div>
+        <div class="name">Klassisk massage</div>
+        <div class="duration">60 min · 800 kr</div>
+      </div>
+      <div class="treatment-card" onclick="selectTreatment('Djupvävnad', 75, 950)">
+        <div class="icon">💪</div>
+        <div class="name">Djupvävnad</div>
+        <div class="duration">75 min · 950 kr</div>
+      </div>
+      <div class="treatment-card" onclick="selectTreatment('Avslappning', 45, 700)">
+        <div class="icon">🌸</div>
+        <div class="name">Avslappning</div>
+        <div class="duration">45 min · 700 kr</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KUND & DETALJER -->
+  <div class="form-section" id="customerSection" style="display:none">
+    <div class="section-title">👤 Kund & Detaljer</div>
+    <select class="customer-select" id="customerSelect" onchange="onCustomerSelect()">
+      <option value="">— Välj kund —</option>
+    </select>
+    <input type="text" class="input-field" id="newCustomerName" placeholder="Eller skriv nytt kundnamn..." style="margin-top:10px;" />
+    <input type="tel" class="input-field" id="newCustomerPhone" placeholder="Telefonnummer (valfritt)" style="margin-top:8px;" />
+    <div class="price-row">
+      <input type="number" class="price-input" id="priceInput" placeholder="Pris (kr)" />
+      <select class="payment-select" id="paymentSelect">
+        <option value="Ej betalt">Ej betalt</option>
+        <option value="Swish">Swish</option>
+        <option value="Kontant">Kontant</option>
+        <option value="Kort">Kort</option>
+        <option value="Faktura">Faktura</option>
+      </select>
+    </div>
+    <textarea class="input-field" id="notesInput" rows="3" placeholder="Anteckningar om kunden / behandlingen..."></textarea>
+  </div>
+
+  <!-- SAMMANFATTNING -->
+  <div class="summary-box" id="summaryBox" style="display:none">
+    <h3>📋 Sammanfattning</h3>
+    <div class="summary-row">
+      <span class="label">Datum</span>
+      <span class="value" id="sumDate">—</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">Tid</span>
+      <span class="value" id="sumTime">—</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">Behandling</span>
+      <span class="value" id="sumTreatment">—</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">Kund</span>
+      <span class="value" id="sumCustomer">—</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">Pris</span>
+      <span class="value" id="sumPrice">—</span>
+    </div>
+  </div>
+
+  <button class="btn-book" id="bookBtn" onclick="saveBooking()" disabled>
+    Boka tid
+  </button>
+</div>
+
+<!-- DAGVY -->
+<div id="tab-dag" class="tab-content">
+  <div class="day-view">
+    <div class="section-title" id="dayViewTitle">📅 Bokningar idag</div>
+    <div id="dayBookingsList">
+      <div class="empty-state">
+        <div class="icon">🌿</div>
+        <div>Inga bokningar idag</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ALLA BOKNINGAR -->
+<div id="tab-lista" class="tab-content">
+  <div class="day-view">
+    <div class="section-title">📋 Kommande bokningar</div>
+    <div id="allBookingsList">
+      <div class="empty-state">
+        <div class="icon">🌿</div>
+        <div>Inga bokningar ännu</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// SUPABASE CONFIG
+const SUPABASE_URL = 'https://oeqmdiqrgfglywepatkq.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lcW1kaXFyZ2ZnbHl3ZXBhdGtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE4MzM5MTksImV4cCI6MjA1NzQwOTkxOX0.5z2ORu7_J9zHEQzCTPZCKnCNXBm3r3r5-_WjY1p0v-Y';
+
+const api = (path, opts = {}) => fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+  headers: {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation',
+    ...opts.headers
+  },
+  ...opts
+}).then(r => r.json());
+
+// STATE
+let state = {
+  currentMonth: new Date(),
+  selectedDate: null,
+  selectedTime: null,
+  selectedTreatment: null,
+  selectedDuration: 60,
+  selectedPrice: 800,
+  customers: [],
+  bookings: []
+};
+
+// INIT
+async function init() {
+  await loadCustomers();
+  await loadBookings();
+  renderCalendar();
+  renderDayView();
+  renderAllBookings();
+}
+
+async function loadCustomers() {
+  const data = await api('customers?select=*&deleted_at=is.null&order=name');
+  state.customers = Array.isArray(data) ? data : [];
+  const sel = document.getElementById('customerSelect');
+  sel.innerHTML = '<option value="">— Välj befintlig kund —</option>';
+  state.customers.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = `${c.name}${c.phone ? ' · ' + c.phone : ''}`;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadBookings() {
+  const data = await api('bookings?select=*&deleted_at=is.null&order=booking_date,start_time');
+  state.bookings = Array.isArray(data) ? data : [];
+}
+
+// TABS
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['ny','dag','lista'][i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'dag') renderDayView();
+  if (name === 'lista') renderAllBookings();
+}
+
+// KALENDER
+function renderCalendar() {
+  const d = state.currentMonth;
+  const months = ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
+  document.getElementById('calMonthTitle').textContent = `${months[d.getMonth()]} ${d.getFullYear()}`;
+
+  const grid = document.getElementById('calGrid');
+  const days = ['Mån','Tis','Ons','Tor','Fre','Lör','Sön'];
+  grid.innerHTML = days.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+  const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+  let startDow = firstDay.getDay() - 1;
+  if (startDow < 0) startDow = 6;
+
+  for (let i = 0; i < startDow; i++) {
+    grid.innerHTML += `<div class="cal-day empty"></div>`;
+  }
+
+  const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const bookingDates = new Set(state.bookings.map(b => b.booking_date));
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(d.getFullYear(), d.getMonth(), day);
+    const dateStr = date.toISOString().split('T')[0];
+    const isPast = date < today;
+    const isToday = date.toDateString() === today.toDateString();
+    const isSelected = state.selectedDate === dateStr;
+    const hasBooking = bookingDates.has(dateStr);
+
+    let cls = 'cal-day';
+    if (isPast) cls += ' past';
+    if (isToday) cls += ' today';
+    if (isSelected) cls += ' selected';
+    if (hasBooking) cls += ' has-booking';
+
+    const click = isPast ? '' : `onclick="selectDate('${dateStr}')"`;
+    grid.innerHTML += `<div class="${cls}" ${click}>${day}</div>`;
+  }
+}
+
+function changeMonth(dir) {
+  state.currentMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() + dir, 1);
+  renderCalendar();
+}
+
+function selectDate(dateStr) {
+  state.selectedDate = dateStr;
+  state.selectedTime = null;
+  renderCalendar();
+  renderTimeSlots(dateStr);
+  document.getElementById('timeSection').style.display = 'block';
+  document.getElementById('treatmentSection').style.display = 'none';
+  document.getElementById('customerSection').style.display = 'none';
+  document.getElementById('summaryBox').style.display = 'none';
+  updateBookBtn();
+}
+
+// TIDER
+function renderTimeSlots(dateStr) {
+  const bookedTimes = state.bookings
+    .filter(b => b.booking_date === dateStr && b.status !== 'Avbokad')
+    .map(b => b.start_time.substring(0,5));
+
+  const grid = document.getElementById('timeGrid');
+  grid.innerHTML = '';
+
+  for (let h = 10; h < 19; h++) {
+    for (let m = 0; m < 60; m += 60) {
+      const time = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      const isBooked = bookedTimes.includes(time);
+      const isSelected = state.selectedTime === time;
+
+      let cls = 'time-slot';
+      if (isBooked) cls += ' booked';
+      if (isSelected) cls += ' selected';
+
+      const click = isBooked ? '' : `onclick="selectTime('${time}')"`;
+      grid.innerHTML += `<div class="${cls}" ${click}>${time}</div>`;
+    }
+  }
+}
+
+function selectTime(time) {
+  state.selectedTime = time;
+  renderTimeSlots(state.selectedDate);
+  document.getElementById('treatmentSection').style.display = 'block';
+  document.getElementById('customerSection').style.display = 'block';
+  updateSummary();
+  updateBookBtn();
+}
+
+// BEHANDLING
+function selectTreatment(name, duration, price) {
+  state.selectedTreatment = name;
+  state.selectedDuration = duration;
+  state.selectedPrice = price;
+
+  document.querySelectorAll('.treatment-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  document.getElementById('priceInput').value = price;
+  updateSummary();
+  updateBookBtn();
+}
+
+// KUND
+function onCustomerSelect() {
+  updateSummary();
+  updateBookBtn();
+}
+
+// SAMMANFATTNING
+function updateSummary() {
+  if (!state.selectedDate || !state.selectedTime) return;
+
+  const dateObj = new Date(state.selectedDate);
+  const dayNames = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'];
+  const monthNames = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+
+  const formattedDate = `${dayNames[dateObj.getDay()]} ${dateObj.getDate()} ${monthNames[dateObj.getMonth()]}`;
+
+  const [h, m] = state.selectedTime.split(':');
+  const startMinutes = parseInt(h) * 60 + parseInt(m);
+  const endMinutes = startMinutes + (state.selectedDuration || 60);
+  const endH = Math.floor(endMinutes / 60);
+  const endM = endMinutes % 60;
+  const endTime = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
+
+  const customerName = getCustomerName();
+  const price = document.getElementById('priceInput').value || state.selectedPrice;
+
+  document.getElementById('sumDate').textContent = formattedDate;
+  document.getElementById('sumTime').textContent = `${state.selectedTime} – ${endTime}`;
+  document.getElementById('sumTreatment').textContent = state.selectedTreatment || '—';
+  document.getElementById('sumCustomer').textContent = customerName || '—';
+  document.getElementById('sumPrice').textContent = price ? `${price} kr` : '—';
+
+  if (state.selectedTreatment && customerName) {
+    document.getElementById('summaryBox').style.display = 'block';
+  }
+}
+
+function getCustomerName() {
+  const sel = document.getElementById('customerSelect');
+  const newName = document.getElementById('newCustomerName').value.trim();
+  if (newName) return newName;
+  if (sel.value) {
+    const c = state.customers.find(c => c.id === sel.value);
+    return c ? c.name : '';
+  }
+  return '';
+}
+
+function updateBookBtn() {
+  const ready = state.selectedDate && state.selectedTime && state.selectedTreatment && getCustomerName();
+  document.getElementById('bookBtn').disabled = !ready;
+}
+
+// SPARA BOKNING
+async function saveBooking() {
+  const customerName = getCustomerName();
+  if (!customerName) { showToast('Välj eller skriv ett kundnamn', true); return; }
+
+  const sel = document.getElementById('customerSelect');
+  const newPhone = document.getElementById('newCustomerPhone').value.trim();
+  let customerId = sel.value || null;
+
+  // Skapa ny kund om namn skrivits manuellt
+  if (!customerId && customerName) {
+    const newCustomer = await api('customers', {
+      method: 'POST',
+      body: JSON.stringify({ name: customerName, phone: newPhone || null })
+    });
+    if (newCustomer && newCustomer[0]) customerId = newCustomer[0].id;
+  }
+
+  const [h, m] = state.selectedTime.split(':');
+  const startMinutes = parseInt(h) * 60 + parseInt(m);
+  const endMinutes = startMinutes + state.selectedDuration;
+  const endH = Math.floor(endMinutes / 60);
+  const endM = endMinutes % 60;
+  const endTime = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
+
+  const price = parseFloat(document.getElementById('priceInput').value) || state.selectedPrice;
+  const payment = document.getElementById('paymentSelect').value;
+  const notes = document.getElementById('notesInput').value.trim();
+
+  const booking = {
+    customer_id: customerId,
+    customer_name: customerName,
+    customer_phone: newPhone || null,
+    treatment_type: state.selectedTreatment,
+    booking_date: state.selectedDate,
+    start_time: state.selectedTime + ':00',
+    end_time: endTime + ':00',
+    duration_minutes: state.selectedDuration,
+    price: price,
+    payment_method: payment,
+    notes: notes || null,
+    status: 'Bokad'
+  };
+
+  const result = await api('bookings', {
+    method: 'POST',
+    body: JSON.stringify(booking)
+  });
+
+  if (result && !result.error) {
+    showToast(`✅ Bokad! ${customerName} — ${state.selectedDate} kl ${state.selectedTime}`);
+    await loadBookings();
+    await loadCustomers();
+    resetForm();
+  } else {
+    showToast('Något gick fel. Försök igen.', true);
+  }
+}
+
+function resetForm() {
+  state.selectedDate = null;
+  state.selectedTime = null;
+  state.selectedTreatment = null;
+  document.getElementById('timeSection').style.display = 'none';
+  document.getElementById('treatmentSection').style.display = 'none';
+  document.getElementById('customerSection').style.display = 'none';
+  document.getElementById('summaryBox').style.display = 'none';
+  document.getElementById('customerSelect').value = '';
+  document.getElementById('newCustomerName').value = '';
+  document.getElementById('newCustomerPhone').value = '';
+  document.getElementById('priceInput').value = '';
+  document.getElementById('notesInput').value = '';
+  document.getElementById('paymentSelect').value = 'Ej betalt';
+  document.querySelectorAll('.treatment-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('bookBtn').disabled = true;
+  renderCalendar();
+}
+
+// DAGVY
+function renderDayView() {
+  const today = new Date().toISOString().split('T')[0];
+  const todayBookings = state.bookings.filter(b => b.booking_date === today && b.status !== 'Avbokad');
+
+  const list = document.getElementById('dayBookingsList');
+
+  const dateObj = new Date(today);
+  const dayNames = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'];
+  const monthNames = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
+  document.getElementById('dayViewTitle').textContent =
+    `📅 ${dayNames[dateObj.getDay()]} ${dateObj.getDate()} ${monthNames[dateObj.getMonth()]}`;
+
+  if (todayBookings.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🌿</div><div>Inga bokningar idag</div></div>';
+    return;
+  }
+
+  list.innerHTML = todayBookings.map(b => `
+    <div class="day-booking-item">
+      <div class="day-booking-time">${b.start_time.substring(0,5)}–${b.end_time.substring(0,5)}</div>
+      <div class="day-booking-info">
+        <div class="day-booking-name">${b.customer_name}</div>
+        <div class="day-booking-treatment">${b.treatment_type} · ${b.price} kr</div>
+      </div>
+      <span class="status-badge status-${b.status}">${b.status}</span>
+    </div>
+  `).join('');
+}
+
+// ALLA BOKNINGAR
+function renderAllBookings() {
+  const today = new Date().toISOString().split('T')[0];
+  const upcoming = state.bookings
+    .filter(b => b.booking_date >= today && b.status !== 'Avbokad')
+    .slice(0, 20);
+
+  const list = document.getElementById('allBookingsList');
+
+  if (upcoming.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🌿</div><div>Inga kommande bokningar</div></div>';
+    return;
+  }
+
+  list.innerHTML = upcoming.map(b => `
+    <div class="day-booking-item">
+      <div class="day-booking-time">
+        <div style="font-size:0.7rem;color:var(--text2)">${b.booking_date}</div>
+        <div>${b.start_time.substring(0,5)}</div>
+      </div>
+      <div class="day-booking-info">
+        <div class="day-booking-name">${b.customer_name}</div>
+        <div class="day-booking-treatment">${b.treatment_type} · ${b.price} kr</div>
+      </div>
+      <span class="status-badge status-${b.status}">${b.status}</span>
+    </div>
+  `).join('');
+}
+
+// TOAST
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// Lyssna på kund-input för uppdatering
+document.getElementById('newCustomerName').addEventListener('input', () => {
+  updateSummary();
+  updateBookBtn();
+});
+
+init();
+</script>
+</body>
+</html>
